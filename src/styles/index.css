@@ -50,8 +50,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* custom brand color */
-    --color-brand: #1895c7;
-    --color-secondary: #1480ad;
+    --color-brand: #4db8e0;
+    --color-secondary: #1895c7;
     --color-bg: var(--color-neutral-900);
     --color-tx: var(--color-brand);
     --color-hr: var(--color-red-500);
@@ -89,9 +89,9 @@
 }
 
 [data-theme='dark'] {
-  /* const nike = 'rgb(224,237,94)'; */
-  --color-brand: #e0ed5e;
-  --color-secondary: #ccd94a;
+  /* custom brand color */
+  --color-brand: #4db8e0;
+  --color-secondary: #1895c7;
   --color-bg: var(--color-neutral-900);
   --color-tx: var(--color-brand);
   --color-hr: var(--color-red-500);
