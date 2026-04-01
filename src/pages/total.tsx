@@ -1,28 +1,29 @@
 import ActivityList from '@/components/ActivityList';
-import Layout from '@/components/Layout';
+import Header from '@/components/Header';
 import { Helmet } from 'react-helmet-async';
+import useSiteMetadata from '@/hooks/useSiteMetadata';
 import { useTheme } from '@/hooks/useTheme';
 import { useEffect } from 'react';
 
 const HomePage = () => {
-  // Use the theme hook to get the current theme
+  const { siteTitle, description } = useSiteMetadata();
   const { theme } = useTheme();
 
-  // Apply theme changes to the document when theme changes
   useEffect(() => {
     const htmlElement = document.documentElement;
-    // Set explicit theme attribute
     htmlElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   return (
-    <Layout>
+    <>
       <Helmet>
-        {/* Set HTML attributes including theme */}
         <html lang="en" data-theme={theme} />
+        <title>{siteTitle}</title>
+        <meta name="description" content={description} />
       </Helmet>
+      <Header />
       <ActivityList />
-    </Layout>
+    </>
   );
 };
 
