@@ -2,21 +2,23 @@ import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/Layout';
-import LocationStat from '@/components/LocationStat';
 import RunMap from '@/components/RunMap';
 import RunTable from '@/components/RunTable';
 import SVGStat from '@/components/SVGStat';
-import YearsStat from '@/components/YearsStat';
+import YearSelector, {
+  ProgressBar,
+  YEARLY_GOAL,
+  MONTHLY_GOAL,
+} from '@/components/YearSelector';
+import RaceRecords from '@/components/RaceRecords';
+import MonthlyChart from '@/components/MonthlyChart';
 import useActivities from '@/hooks/useActivities';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 import { useInterval } from '@/hooks/useInterval';
-import { IS_CHINESE } from '@/utils/const';
 import {
   Activity,
   IViewState,
   filterAndSortRuns,
-  filterCityRuns,
-  filterTitleRuns,
   filterYearRuns,
   geoJsonForRuns,
   getBoundsForGeoData,
@@ -24,8 +26,10 @@ import {
   sortDateFunc,
   titleForShow,
   RunIds,
+  convertMovingTime2Sec,
 } from '@/utils/utils';
 import { useTheme, useThemeChangeCounter } from '@/hooks/useTheme';
+import { M_TO_DIST } from '@/utils/utils';
 
 const Index = () => {
   const { siteTitle, siteUrl } = useSiteMetadata();
@@ -51,6 +55,47 @@ const Index = () => {
 
   const selectedRunIdRef = useRef<number | null>(null);
   const selectedRunDateRef = useRef<string | null>(null);
+
+  // Compute all-time totals (only type === 'Run') for stat cards
+  const allTimeStats = useMemo(() => {
+    const runOnly = activities.filter((r) => r.type === 'Run');
+    let totalDistance = 0;
+    let totalSeconds = 0;
+    runOnly.forEach((run) => {
+      totalDistance += run.distance || 0;
+      totalSeconds += convertMovingTime2Sec(run.moving_time);
+    });
+    const totalHours = Math.floor(totalSeconds / 3600);
+    return {
+      count: runOnly.length,
+      distanceKm: parseFloat((totalDistance / M_TO_DIST).toFixed(0)),
+      hours: totalHours,
+    };
+  }, [activities]);
+
+  // Compute year/month stats for progress bars
+  const yearStats = useMemo(() => {
+    const now = new Date();
+    const displayYear = year === 'Total' ? String(now.getFullYear()) : year;
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    let yearDistance = 0;
+    let monthDistance = 0;
+    activities.forEach((run) => {
+      if (run.start_date_local.slice(0, 4) === displayYear) {
+        yearDistance += run.distance || 0;
+      }
+      if (run.start_date_local.slice(0, 7) === currentMonth) {
+        monthDistance += run.distance || 0;
+      }
+    });
+
+    return {
+      displayYear,
+      yearDistanceKm: parseFloat((yearDistance / M_TO_DIST).toFixed(1)),
+      monthDistanceKm: parseFloat((monthDistance / M_TO_DIST).toFixed(1)),
+    };
+  }, [activities, year]);
 
   // Parse URL hash on mount to check for run ID
   useEffect(() => {
@@ -188,20 +233,6 @@ const Index = () => {
       setIsAnimating(false);
     },
     [viewState.zoom, bounds, changeByItem]
-  );
-
-  const changeCity = useCallback(
-    (city: string) => {
-      changeByItem(city, 'City', filterCityRuns);
-    },
-    [changeByItem]
-  );
-
-  const changeTitle = useCallback(
-    (title: string) => {
-      changeByItem(title, 'Title', filterTitleRuns);
-    },
-    [changeByItem]
   );
 
   // For RunTable compatibility - create a mock setActivity function
@@ -393,41 +424,79 @@ const Index = () => {
       <Helmet>
         <html lang="en" data-theme={theme} />
       </Helmet>
-      <div className="w-full lg:w-1/3">
-        <h1 className="my-12 mt-6 text-5xl font-extrabold italic">
-          <a href={siteUrl}>{siteTitle}</a>
-        </h1>
-        {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
-          <LocationStat
-            changeYear={changeYear}
-            changeCity={changeCity}
-            changeTitle={changeTitle}
-          />
-        ) : (
-          <YearsStat year={year} onClick={changeYear} />
-        )}
+      {/* Row 1: Stat cards + Race Records */}
+      <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-5">
+        {/* Left 3/5: Three stat cards */}
+        <div className="grid grid-cols-3 gap-4 lg:col-span-3">
+          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+            <div className="mb-1 text-xs opacity-60">总记录</div>
+            <div className="text-lg font-bold italic">{allTimeStats.count} <span className="text-xs font-normal opacity-50">次</span></div>
+            <div className="text-lg font-bold italic">{allTimeStats.distanceKm} <span className="text-xs font-normal opacity-50">km</span></div>
+            <div className="text-lg font-bold italic">{allTimeStats.hours} <span className="text-xs font-normal opacity-50">小时</span></div>
+          </div>
+          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+            <div className="mb-2 text-xs opacity-60">{yearStats.displayYear} 年度跑量</div>
+            <ProgressBar
+              current={yearStats.yearDistanceKm}
+              goal={YEARLY_GOAL}
+              unit="km"
+            />
+          </div>
+          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+            <div className="mb-2 text-xs opacity-60">本月跑量</div>
+            <ProgressBar
+              current={yearStats.monthDistanceKm}
+              goal={MONTHLY_GOAL}
+              unit="km"
+            />
+          </div>
+        </div>
+        {/* Right 2/5: Race Records */}
+        <div className="lg:col-span-2">
+          <RaceRecords locateActivity={locateActivity} />
+        </div>
       </div>
-      <div className="w-full lg:w-2/3" id="map-container">
-        <RunMap
-          title={title}
-          viewState={viewState}
-          geoData={animatedGeoData}
-          setViewState={setViewState}
-          changeYear={changeYear}
-          thisYear={year}
-          animationTrigger={animationTrigger}
-        />
-        {year === 'Total' ? (
-          <SVGStat />
-        ) : (
-          <RunTable
-            runs={runs}
-            locateActivity={locateActivity}
-            setActivity={setActivity}
-            runIndex={runIndex}
-            setRunIndex={setRunIndex}
-          />
-        )}
+
+      {/* Row 2: Two columns 3:2 — Left: Year Selector + Table/SVG, Right: Map + Monthly Chart */}
+      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-5">
+        {/* Left column: Year selector + Run history */}
+        <div className="flex flex-col gap-6 lg:col-span-3">
+          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+            <h1 className="mb-4 text-4xl font-extrabold italic">
+              <a href={siteUrl}>{siteTitle}</a>
+            </h1>
+            <YearSelector year={year} onClick={changeYear} />
+          </div>
+          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+            {year === 'Total' ? (
+              <SVGStat />
+            ) : (
+              <RunTable
+                runs={runs}
+                locateActivity={locateActivity}
+                setActivity={setActivity}
+                runIndex={runIndex}
+                setRunIndex={setRunIndex}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Right column: Map + Monthly Chart */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <div className="overflow-hidden rounded-2xl bg-[var(--color-activity-card)]" id="map-container">
+            <RunMap
+              title={title}
+              viewState={viewState}
+              geoData={animatedGeoData}
+              setViewState={setViewState}
+              changeYear={changeYear}
+              thisYear={year}
+              animationTrigger={animationTrigger}
+            />
+          </div>
+          <MonthlyChart year={year} />
+        </div>
       </div>
       {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
       {import.meta.env.VERCEL && <Analytics />}

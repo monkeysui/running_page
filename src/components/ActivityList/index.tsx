@@ -696,9 +696,6 @@ const ActivityList: React.FC = () => {
   return (
     <div className={styles.activityList}>
       <div className={styles.filterContainer} ref={filterRef}>
-        <button className={styles.smallHomeButton} onClick={handleHomeClick}>
-          {HOME_PAGE_TITLE}
-        </button>
         <select
           onChange={(e) => setSportType(e.target.value)}
           value={sportType}

@@ -443,7 +443,7 @@ const RunMap = ({
           </a>
         </div>
       )}
-      <RunMapButtons changeYear={changeYear} thisYear={thisYear} />
+      {/* Year buttons removed - year selection is in YearSelector component */}
       <Source id="data" type="geojson" data={combinedGeoData}>
         <Layer
           id="province"

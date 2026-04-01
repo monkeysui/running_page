@@ -1,11 +1,23 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 import { useTheme, Theme } from '@/hooks/useTheme';
 import styles from './style.module.css';
 
 const Header = () => {
   const { logo, siteUrl, navLinks } = useSiteMetadata();
+  const location = useLocation();
+  const isSummaryPage = location.pathname.includes('summary');
+
+  const displayNavLinks = useMemo(() => {
+    if (isSummaryPage) {
+      return [
+        { name: 'Running Page', url: '/' },
+        ...navLinks.filter((n) => !n.url.includes('summary')),
+      ];
+    }
+    return navLinks;
+  }, [isSummaryPage, navLinks]);
   const { setTheme } = useTheme();
   const [currentIconIndex, setCurrentIconIndex] = useState(0);
 
@@ -71,7 +83,7 @@ const Header = () => {
           </Link>
         </div>
         <div className="flex w-3/4 items-center justify-end text-right">
-          {navLinks.map((n, i) => (
+          {displayNavLinks.map((n, i) => (
             <a
               key={i}
               href={n.url}

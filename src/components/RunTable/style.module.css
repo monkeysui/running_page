@@ -31,7 +31,7 @@
   width: 100%;
   margin: 2rem 0 5rem 0;
   color: var(--color-run-table-thead);
-  background-color: var(--color-background);
+  background-color: transparent;
   font-family: var(--font-mono);
   table-layout: auto;
   :is(thead) {
