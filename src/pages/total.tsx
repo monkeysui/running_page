@@ -1,4 +1,5 @@
 import ActivityList from '@/components/ActivityList';
+import Layout from '@/components/Layout';
 import { Helmet } from 'react-helmet-async';
 import { useTheme } from '@/hooks/useTheme';
 import { useEffect } from 'react';
@@ -15,13 +16,13 @@ const HomePage = () => {
   }, [theme]);
 
   return (
-    <>
+    <Layout>
       <Helmet>
         {/* Set HTML attributes including theme */}
         <html lang="en" data-theme={theme} />
       </Helmet>
       <ActivityList />
-    </>
+    </Layout>
   );
 };
 
