@@ -40,11 +40,11 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
   );
 
   return (
-    <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+    <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
       <h3 className="mb-3 text-sm font-medium opacity-60">
         {year === 'Total' ? '全部' : year} 月度 {DIST_UNIT}
       </h3>
-      <div className="flex h-48 items-end gap-1.5">
+      <div className="flex min-h-48 flex-1 items-end gap-1.5">
         {monthlyData.map((m) => {
           // Use sqrt scale for better visual distribution
           const ratio = m.distance / maxDistance;

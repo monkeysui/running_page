@@ -232,22 +232,20 @@ const Index = () => {
           <MonthlyChart year={year} />
         </div>
 
-        {/* Right column: Run history — absolute so left column determines row height */}
-        <div className="relative lg:col-span-3">
-          <div className="lg:absolute lg:inset-0">
-            <div className="flex h-full flex-col overflow-y-auto rounded-2xl bg-[var(--color-activity-card)] p-4">
-              {year === 'Total' ? (
-                <SVGStat />
-              ) : (
-                <RunTable
-                  runs={runs}
-                  locateActivity={locateActivity}
-                  setActivity={setActivity}
-                  runIndex={runIndex}
-                  setRunIndex={setRunIndex}
-                />
-              )}
-            </div>
+        {/* Right column: Run history */}
+        <div className="flex flex-col lg:col-span-3">
+          <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
+            {year === 'Total' ? (
+              <SVGStat />
+            ) : (
+              <RunTable
+                runs={runs}
+                locateActivity={locateActivity}
+                setActivity={setActivity}
+                runIndex={runIndex}
+                setRunIndex={setRunIndex}
+              />
+            )}
           </div>
         </div>
       </div>
