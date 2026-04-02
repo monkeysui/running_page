@@ -2,7 +2,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 import { useTheme, Theme } from '@/hooks/useTheme';
+import runningQuotes from '@/static/running-quotes';
 import styles from './style.module.css';
+
+const randomQuote =
+  runningQuotes[Math.floor(Math.random() * runningQuotes.length)];
 
 const Header = () => {
   const { logo, siteUrl, navLinks } = useSiteMetadata();
@@ -82,26 +86,40 @@ const Header = () => {
             </picture>
           </Link>
         </div>
-        <div className="flex w-3/4 items-center justify-end text-right">
-          {displayNavLinks.map((n, i) => (
-            <a
-              key={i}
-              href={n.url}
-              className="mr-3 text-lg lg:mr-4 lg:text-base"
-            >
-              {n.name}
-            </a>
-          ))}
-          <div className="ml-4 flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={handleToggle}
-              className={`${styles.themeButton} ${styles.themeButtonActive}`}
-              aria-label={`Switch to ${currentIcon.id} theme`}
-              title={`Switch to ${currentIcon.id} theme`}
-            >
-              <div className={styles.iconWrapper}>{currentIcon.svg}</div>
-            </button>
+        <div className="flex w-3/4 flex-col items-end gap-2">
+          <div className="flex items-center justify-end text-right">
+            {displayNavLinks.map((n, i) => (
+              <a
+                key={i}
+                href={n.url}
+                className="mr-3 text-lg lg:mr-4 lg:text-base"
+              >
+                {n.name}
+              </a>
+            ))}
+            <div className="ml-4 flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={handleToggle}
+                className={`${styles.themeButton} ${styles.themeButtonActive}`}
+                aria-label={`Switch to ${currentIcon.id} theme`}
+                title={`Switch to ${currentIcon.id} theme`}
+              >
+                <div className={styles.iconWrapper}>{currentIcon.svg}</div>
+              </button>
+            </div>
+          </div>
+          <div
+            className="max-w-lg text-right text-base leading-relaxed opacity-60"
+            style={{
+              fontFamily:
+                "'LXGW WenKai', 'Playfair Display', Georgia, serif",
+            }}
+          >
+            <span className="italic">"{randomQuote.text}"</span>
+            <span className="ml-2 text-sm opacity-70">
+              —— {randomQuote.source}
+            </span>
           </div>
         </div>
       </nav>
