@@ -320,20 +320,15 @@ def main():
         output_dir = os.path.dirname(args.output) or "assets"
         for y in years:
             p.years.from_year, p.years.to_year = y, y
-            # Recalculate height for single year heat map
-            p.height = 55 + p.years.real_year * 43
+            # Compact layout: no header title, tighter height (1 year = 43)
+            p.height = 30 + 43
+            p.drawer_type = "compact"
             # Re-set tracks for this year's data
             p.set_tracks(tracks)
-            # Use year-specific title if available, otherwise use default
-            year_title = args.title if args.title else f"{y} Running"
-            original_title = p.title
-            p.title = year_title
             p.draw(
                 drawers[args.type],
                 os.path.join(output_dir, f"github_{str(y)}.svg"),
             )
-            # Restore original title for next iteration
-            p.title = original_title
     else:
         p.draw(drawers[args.type], args.output)
 

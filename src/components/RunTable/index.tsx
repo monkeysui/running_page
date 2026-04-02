@@ -121,6 +121,15 @@ const RunTable = ({
                 setRunIndex={setRunIndex}
               />
             ))}
+            {pagedRuns.length < PAGE_SIZE &&
+              Array.from({ length: PAGE_SIZE - pagedRuns.length }, (_, i) => (
+                <tr key={`empty-${i}`} className={`${styles.runRow} invisible`}>
+                  <td>&nbsp;</td>
+                  {Array.from(sortFunctions.keys()).map((k) => (
+                    <td key={k}>&nbsp;</td>
+                  ))}
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

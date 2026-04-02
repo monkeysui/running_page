@@ -11,6 +11,7 @@ import YearSelector, {
 } from '@/components/YearSelector';
 import RaceRecords from '@/components/RaceRecords';
 import MonthlyChart from '@/components/MonthlyChart';
+import YearHeatmap from '@/components/YearHeatmap';
 import useActivities from '@/hooks/useActivities';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 import {
@@ -237,7 +238,9 @@ const Index = () => {
         {/* Right column: Run history */}
         <div className="flex flex-col lg:col-span-3">
           {year === 'Total' ? (
-            <SVGStat />
+            <div className="overflow-hidden rounded-2xl bg-[var(--color-activity-card)] p-4">
+              <SVGStat />
+            </div>
           ) : (
             <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
               <RunTable
@@ -251,6 +254,9 @@ const Index = () => {
           )}
         </div>
       </div>
+      {/* Row 3: Year heatmap (full width, only for specific year) */}
+      {year !== 'Total' && <YearHeatmap year={year} />}
+
       {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
       {import.meta.env.VERCEL && <Analytics />}
     </Layout>

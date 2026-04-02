@@ -149,13 +149,15 @@ hr {
 }
 
 .svg-color-bg {
-  fill: var(--color-activity-card);
-  rx: 16;
-  ry: 16;
+  fill: transparent;
+}
+
+.svg-color-year-bg {
+  fill: transparent;
 }
 
 .svg-color-inactive-cell {
-  fill: var(--color-activity-card);
+  fill: var(--color-bg);
 }
 
 .svg-color-active-cell {

@@ -67,6 +67,18 @@ class GithubDrawer(TracksDrawer):
 
             if str(year_length) == "0.0":
                 continue
+
+            # Add per-year background rect
+            year_block_height = 3.5 * 9 + year_size + 1.0
+            bg_rect = dr.rect(
+                (offset.x - 2, offset.y - 2),
+                (size.x + 4, year_block_height + 2),
+                fill="#333",
+                rx=3,
+                ry=3,
+            )
+            dr.add(bg_rect)
+
             try:
                 month_names = [
                     locale.nl_langinfo(day)[:3]  # Get only first three letters

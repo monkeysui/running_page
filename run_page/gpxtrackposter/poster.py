@@ -120,6 +120,10 @@ class Poster:
         if self.drawer_type == "year_summary":
             # Year summary drawer handles its own layout
             self.__draw_tracks(d, XY(width - 10, height - 10), XY(5, 5))
+        elif self.drawer_type == "compact":
+            # No header, footer at bottom, tracks start near top
+            self.__draw_footer(d)
+            self.__draw_tracks(d, XY(width - 20, height - 5 - 30), XY(10, 5))
         elif not self.drawer_type == "plain":
             self.__draw_header(d)
             self.__draw_footer(d)
