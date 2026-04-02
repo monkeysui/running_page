@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import useActivities from '@/hooks/useActivities';
-import { M_TO_DIST, DIST_UNIT, RunIds } from '@/utils/utils';
+import { M_TO_DIST, DIST_UNIT, RunIds, locationForRun } from '@/utils/utils';
 import raceLinks from '@/static/race-links';
 
 const PAGE_SIZE = 3;
@@ -27,7 +27,6 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
       const name = (run.name || '').toLowerCase();
       const isMarathonName =
         name.includes('马拉松') || name.includes('marathon');
-      // distance >= 42km AND pace < 7 min/km (speed > 1000/420 ≈ 2.38 m/s)
       const isMarathonByStats =
         run.distance >= 42000 && run.average_speed > 1000 / 420;
       return isMarathonName || isMarathonByStats;
@@ -39,16 +38,22 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
           new Date(b.start_date_local).getTime() -
           new Date(a.start_date_local).getTime()
       )
-      .map(
-        (run): RaceEntry => ({
+      .map((run): RaceEntry => {
+        const year = run.start_date_local.slice(0, 4);
+        const { city } = locationForRun(run);
+        const displayName = city
+          ? `${year}${city}马拉松`
+          : run.name || `${year}马拉松`;
+
+        return {
           runId: run.run_id,
-          name: run.name,
+          name: displayName,
           date: run.start_date_local.slice(0, 10),
           distance: (run.distance / M_TO_DIST).toFixed(1) + ' ' + DIST_UNIT,
           time: run.moving_time,
           blogUrl: raceLinks[run.run_id],
-        })
-      );
+        };
+      });
   }, [activities]);
 
   const totalPages = Math.ceil(races.length / PAGE_SIZE);

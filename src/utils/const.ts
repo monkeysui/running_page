@@ -182,7 +182,7 @@ export const COUNTRY_FILL_COLOR = dark_vanilla;
 
 // Static color constants
 export const RUN_COLOR_LIGHT = '#e73725';
-export const RUN_COLOR_DARK = '#f05545';
+export const RUN_COLOR_DARK = '#e73725';
 
 // Single run animation colors
 export const SINGLE_RUN_COLOR_LIGHT = '#52c41a';
