@@ -56,7 +56,7 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
   return (
     <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
       <h3 className="mb-3 text-sm font-medium opacity-60">{title}</h3>
-      <div className="flex min-h-48 flex-1 items-end gap-1.5">
+      <div className="flex h-48 items-end gap-1.5">
         {data.map((d) => {
           const heightPct = (d.distance / maxDistance) * 100;
           return (

@@ -150,6 +150,8 @@ hr {
 
 .svg-color-bg {
   fill: var(--color-activity-card);
+  rx: 16;
+  ry: 16;
 }
 
 .svg-color-inactive-cell {
