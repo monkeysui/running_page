@@ -220,7 +220,9 @@ const Index = () => {
       </div>
 
       {/* Row 2: Two columns 2:3 — Left: Year Selector + Monthly Chart, Right: Table/SVG */}
-      <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-5">
+      <div
+        className={`grid w-full grid-cols-1 gap-4 lg:grid-cols-5 ${year !== 'Total' ? 'lg:items-stretch' : 'lg:items-start'}`}
+      >
         {/* Left column: Year Selector + Monthly Chart */}
         <div className="flex flex-col gap-4 lg:col-span-2">
           <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
@@ -234,10 +236,12 @@ const Index = () => {
 
         {/* Right column: Run history */}
         <div className="flex flex-col lg:col-span-3">
-          <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
-            {year === 'Total' ? (
+          {year === 'Total' ? (
+            <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
               <SVGStat />
-            ) : (
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
               <RunTable
                 runs={runs}
                 locateActivity={locateActivity}
@@ -245,8 +249,8 @@ const Index = () => {
                 runIndex={runIndex}
                 setRunIndex={setRunIndex}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
       {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}

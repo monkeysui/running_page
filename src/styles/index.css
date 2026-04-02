@@ -149,7 +149,7 @@ hr {
 }
 
 .svg-color-bg {
-  fill: var(--color-run-row-hover-background);
+  fill: transparent;
 }
 
 .svg-color-inactive-cell {
