@@ -237,9 +237,7 @@ const Index = () => {
         {/* Right column: Run history */}
         <div className="flex flex-col lg:col-span-3">
           {year === 'Total' ? (
-            <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
-              <SVGStat />
-            </div>
+            <SVGStat />
           ) : (
             <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
               <RunTable

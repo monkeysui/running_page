@@ -145,7 +145,7 @@ hr {
 .github-svg text,
 .grid-svg text,
 .year-svg text {
-  fill: var(--color-run-date);
+  fill: var(--color-brand);
 }
 
 .svg-color-bg {
