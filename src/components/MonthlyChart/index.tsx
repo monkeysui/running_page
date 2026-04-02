@@ -46,9 +46,7 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
       </h3>
       <div className="flex min-h-48 flex-1 items-end gap-1.5">
         {monthlyData.map((m) => {
-          // Use sqrt scale for better visual distribution
-          const ratio = m.distance / maxDistance;
-          const heightPct = Math.sqrt(ratio) * 100;
+          const heightPct = (m.distance / maxDistance) * 100;
           return (
             <div
               key={m.month}

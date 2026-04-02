@@ -149,7 +149,7 @@ hr {
 }
 
 .svg-color-bg {
-  fill: transparent;
+  fill: var(--color-activity-card);
 }
 
 .svg-color-inactive-cell {
