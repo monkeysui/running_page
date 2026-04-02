@@ -12,6 +12,8 @@ import { DIST_UNIT } from '@/utils/utils';
 import RunRow from './RunRow';
 import styles from './style.module.css';
 
+const PAGE_SIZE = 12;
+
 interface IRunTableProperties {
   runs: Activity[];
   locateActivity: (_runIds: RunIds) => void;
@@ -30,6 +32,9 @@ const RunTable = ({
   setRunIndex,
 }: IRunTableProperties) => {
   const [sortFuncInfo, setSortFuncInfo] = useState('');
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.ceil(runs.length / PAGE_SIZE);
 
   // Memoize sort functions to prevent recreating them on every render
   const sortFunctions = useMemo(() => {
@@ -82,11 +87,14 @@ const RunTable = ({
       const f = sortFunctions.get(funcName);
 
       setRunIndex(-1);
+      setPage(0);
       setSortFuncInfo(sortFuncInfo === funcName ? '' : funcName);
       setActivity(runs.sort(f));
     },
     [sortFunctions, sortFuncInfo, runs, setRunIndex, setActivity]
   );
+
+  const pagedRuns = runs.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <div className={styles.tableContainer}>
@@ -102,10 +110,10 @@ const RunTable = ({
           </tr>
         </thead>
         <tbody>
-          {runs.map((run, elementIndex) => (
+          {pagedRuns.map((run, elementIndex) => (
             <RunRow
               key={run.run_id}
-              elementIndex={elementIndex}
+              elementIndex={page * PAGE_SIZE + elementIndex}
               locateActivity={locateActivity}
               run={run}
               runIndex={runIndex}
@@ -114,6 +122,27 @@ const RunTable = ({
           ))}
         </tbody>
       </table>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 pb-4 text-sm opacity-60">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="px-2 py-1 disabled:opacity-30"
+          >
+            ‹ 上一页
+          </button>
+          <span>
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page === totalPages - 1}
+            className="px-2 py-1 disabled:opacity-30"
+          >
+            下一页 ›
+          </button>
+        </div>
+      )}
     </div>
   );
 };

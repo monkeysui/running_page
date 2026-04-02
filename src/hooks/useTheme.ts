@@ -127,7 +127,9 @@ export const useTheme = () => {
     if (typeof window === 'undefined') return 'dark';
     const saved = localStorage.getItem('theme') as Theme;
     if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
   });
 
   /**

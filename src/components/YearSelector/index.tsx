@@ -85,8 +85,7 @@ const YearSelector = ({ year, onClick }: IYearSelectorProps) => {
     });
 
     // Yearly distance for display year
-    const displayYear =
-      year === 'Total' ? String(now.getFullYear()) : year;
+    const displayYear = year === 'Total' ? String(now.getFullYear()) : year;
     let yearDistance = 0;
     runs.forEach((run) => {
       if (run.start_date_local.slice(0, 4) === displayYear) {

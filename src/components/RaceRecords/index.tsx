@@ -42,8 +42,7 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
           runId: run.run_id,
           name: run.name,
           date: run.start_date_local.slice(0, 10),
-          distance:
-            (run.distance / M_TO_DIST).toFixed(1) + ' ' + DIST_UNIT,
+          distance: (run.distance / M_TO_DIST).toFixed(1) + ' ' + DIST_UNIT,
           time: run.moving_time,
         })
       );
@@ -67,7 +66,9 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
             >
               ‹
             </button>
-            <span>{page + 1}/{totalPages}</span>
+            <span>
+              {page + 1}/{totalPages}
+            </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page === totalPages - 1}
@@ -94,12 +95,10 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
               className="cursor-pointer border-b border-[var(--color-hr-primary)] border-opacity-30 transition-opacity hover:opacity-70"
               onClick={() => locateActivity([race.runId])}
             >
-              <td className="py-2 pr-3 whitespace-nowrap">{race.date}</td>
+              <td className="whitespace-nowrap py-2 pr-3">{race.date}</td>
               <td className="py-2 pr-3 font-medium">{race.name}</td>
-              <td className="py-2 pr-3 whitespace-nowrap">
-                {race.distance}
-              </td>
-              <td className="py-2 whitespace-nowrap">{race.time}</td>
+              <td className="whitespace-nowrap py-2 pr-3">{race.distance}</td>
+              <td className="whitespace-nowrap py-2">{race.time}</td>
             </tr>
           ))}
         </tbody>

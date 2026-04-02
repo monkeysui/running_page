@@ -88,14 +88,11 @@ const Index = () => {
     );
   }, [activities, currentFilter.item, currentFilter.func]);
 
-  const changeYear = useCallback(
-    (y: string) => {
-      setYear(y);
-      setCurrentFilter({ item: y, func: filterYearRuns });
-      setRunIndex(-1);
-    },
-    []
-  );
+  const changeYear = useCallback((y: string) => {
+    setYear(y);
+    setCurrentFilter({ item: y, func: filterYearRuns });
+    setRunIndex(-1);
+  }, []);
 
   // For RunTable compatibility
   const setActivity = useCallback((_newRuns: Activity[]) => {
@@ -184,12 +181,23 @@ const Index = () => {
         <div className="grid grid-cols-3 gap-4 lg:col-span-3">
           <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
             <div className="mb-1 text-xs opacity-60">总记录</div>
-            <div className="text-2xl font-bold italic">{allTimeStats.count} <span className="text-sm font-normal opacity-50">次</span></div>
-            <div className="text-2xl font-bold italic">{allTimeStats.distanceKm} <span className="text-sm font-normal opacity-50">km</span></div>
-            <div className="text-2xl font-bold italic">{allTimeStats.hours} <span className="text-sm font-normal opacity-50">小时</span></div>
+            <div className="text-2xl font-bold italic">
+              {allTimeStats.count}{' '}
+              <span className="text-sm font-normal opacity-50">次</span>
+            </div>
+            <div className="text-2xl font-bold italic">
+              {allTimeStats.distanceKm}{' '}
+              <span className="text-sm font-normal opacity-50">km</span>
+            </div>
+            <div className="text-2xl font-bold italic">
+              {allTimeStats.hours}{' '}
+              <span className="text-sm font-normal opacity-50">小时</span>
+            </div>
           </div>
           <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
-            <div className="mb-2 text-xs opacity-60">{yearStats.displayYear} 年度跑量</div>
+            <div className="mb-2 text-xs opacity-60">
+              {yearStats.displayYear} 年度跑量
+            </div>
             <ProgressBar
               current={yearStats.yearDistanceKm}
               goal={YEARLY_GOAL}
@@ -211,9 +219,20 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Row 2: Two columns 3:2 — Left: Table/SVG, Right: Year Selector + Monthly Chart */}
+      {/* Row 2: Two columns 2:3 — Left: Year Selector + Monthly Chart, Right: Table/SVG */}
       <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-5">
-        {/* Left column: Run history */}
+        {/* Left column: Year Selector + Monthly Chart */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+            <h1 className="mb-4 text-4xl font-extrabold italic">
+              <a href={siteUrl}>{siteTitle}</a>
+            </h1>
+            <YearSelector year={year} onClick={changeYear} />
+          </div>
+          <MonthlyChart year={year} />
+        </div>
+
+        {/* Right column: Run history */}
         <div className="flex flex-col gap-6 lg:col-span-3">
           <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
             {year === 'Total' ? (
@@ -228,17 +247,6 @@ const Index = () => {
               />
             )}
           </div>
-        </div>
-
-        {/* Right column: Year Selector + Monthly Chart */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
-          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
-            <h1 className="mb-4 text-4xl font-extrabold italic">
-              <a href={siteUrl}>{siteTitle}</a>
-            </h1>
-            <YearSelector year={year} onClick={changeYear} />
-          </div>
-          <MonthlyChart year={year} />
         </div>
       </div>
       {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
