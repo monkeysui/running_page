@@ -232,9 +232,9 @@ const Index = () => {
           <MonthlyChart year={year} />
         </div>
 
-        {/* Right column: Run history */}
-        <div className="flex flex-col lg:col-span-3">
-          <div className="flex min-h-0 flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
+        {/* Right column: Run history — min-h-0 lets it shrink to match left column */}
+        <div className="flex min-h-0 flex-col lg:col-span-3">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-2xl bg-[var(--color-activity-card)] p-4">
             {year === 'Total' ? (
               <SVGStat />
             ) : (
