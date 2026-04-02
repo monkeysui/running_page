@@ -97,33 +97,35 @@ const RunTable = ({
   const pagedRuns = runs.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
-    <div className={styles.tableContainer}>
-      <table className={styles.runTable} cellSpacing="0" cellPadding="0">
-        <thead>
-          <tr>
-            <th />
-            {Array.from(sortFunctions.keys()).map((k) => (
-              <th key={k} onClick={handleClick}>
-                {k}
-              </th>
+    <div className="flex flex-1 flex-col">
+      <div className={styles.tableContainer}>
+        <table className={styles.runTable} cellSpacing="0" cellPadding="0">
+          <thead>
+            <tr>
+              <th />
+              {Array.from(sortFunctions.keys()).map((k) => (
+                <th key={k} onClick={handleClick}>
+                  {k}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {pagedRuns.map((run, elementIndex) => (
+              <RunRow
+                key={run.run_id}
+                elementIndex={page * PAGE_SIZE + elementIndex}
+                locateActivity={locateActivity}
+                run={run}
+                runIndex={runIndex}
+                setRunIndex={setRunIndex}
+              />
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {pagedRuns.map((run, elementIndex) => (
-            <RunRow
-              key={run.run_id}
-              elementIndex={page * PAGE_SIZE + elementIndex}
-              locateActivity={locateActivity}
-              run={run}
-              runIndex={runIndex}
-              setRunIndex={setRunIndex}
-            />
-          ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 pb-4 text-sm opacity-60">
+        <div className="mt-auto flex items-center justify-center gap-3 pt-4 text-sm opacity-60">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}

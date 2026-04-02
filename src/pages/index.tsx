@@ -220,9 +220,9 @@ const Index = () => {
       </div>
 
       {/* Row 2: Two columns 2:3 — Left: Year Selector + Monthly Chart, Right: Table/SVG */}
-      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-5">
         {/* Left column: Year Selector + Monthly Chart */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
+        <div className="flex flex-col gap-4 lg:col-span-2">
           <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
             <h1 className="mb-4 text-4xl font-extrabold italic">
               <a href={siteUrl}>{siteTitle}</a>
@@ -233,8 +233,8 @@ const Index = () => {
         </div>
 
         {/* Right column: Run history */}
-        <div className="flex flex-col gap-6 lg:col-span-3">
-          <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
+        <div className="flex flex-col lg:col-span-3">
+          <div className="flex min-h-0 flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
             {year === 'Total' ? (
               <SVGStat />
             ) : (
