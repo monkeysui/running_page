@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import useActivities from '@/hooks/useActivities';
 import { M_TO_DIST, DIST_UNIT, RunIds, locationForRun } from '@/utils/utils';
-import raceLinks from '@/static/race-links';
+import raceMetadata, { raceExcludeIds } from '@/static/race-links';
 
 const PAGE_SIZE = 3;
 
@@ -24,6 +24,7 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
 
   const races = useMemo(() => {
     const matched = activities.filter((run) => {
+      if (raceExcludeIds.has(run.run_id)) return false;
       const name = (run.name || '').toLowerCase();
       const isMarathonName =
         name.includes('马拉松') || name.includes('marathon');
@@ -39,11 +40,19 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
           new Date(a.start_date_local).getTime()
       )
       .map((run): RaceEntry => {
-        const year = run.start_date_local.slice(0, 4);
-        const { city } = locationForRun(run);
-        const displayName = city
-          ? `${year}${city}马拉松`
-          : run.name || `${year}马拉松`;
+        const meta = raceMetadata[run.run_id];
+        let displayName: string;
+
+        if (meta?.name) {
+          displayName = meta.name;
+        } else {
+          const year = run.start_date_local.slice(0, 4);
+          const { city } = locationForRun(run);
+          const cleanCity = city ? city.replace(/市$/, '') : '';
+          displayName = cleanCity
+            ? `${year}${cleanCity}马拉松`
+            : run.name || `${year}马拉松`;
+        }
 
         return {
           runId: run.run_id,
@@ -51,7 +60,7 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
           date: run.start_date_local.slice(0, 10),
           distance: (run.distance / M_TO_DIST).toFixed(1) + ' ' + DIST_UNIT,
           time: run.moving_time,
-          blogUrl: raceLinks[run.run_id],
+          blogUrl: meta?.url,
         };
       });
   }, [activities]);
@@ -93,8 +102,7 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
             <th className="pb-2 pr-3 font-medium">日期</th>
             <th className="pb-2 pr-3 font-medium">赛事</th>
             <th className="pb-2 pr-3 font-medium">距离</th>
-            <th className="pb-2 pr-3 font-medium">用时</th>
-            <th className="pb-2 font-medium"></th>
+            <th className="pb-2 font-medium">用时</th>
           </tr>
         </thead>
         <tbody>
@@ -105,36 +113,23 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
               onClick={() => locateActivity([race.runId])}
             >
               <td className="whitespace-nowrap py-2 pr-3">{race.date}</td>
-              <td className="py-2 pr-3 font-medium">{race.name}</td>
-              <td className="whitespace-nowrap py-2 pr-3">{race.distance}</td>
-              <td className="whitespace-nowrap py-2 pr-3">{race.time}</td>
-              <td className="py-2">
-                {race.blogUrl && (
+              <td className="py-2 pr-3 font-medium">
+                {race.blogUrl ? (
                   <a
                     href={race.blogUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="opacity-50 transition-opacity hover:opacity-100"
-                    title="查看博文"
+                    className="underline decoration-1 underline-offset-2 hover:decoration-2"
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
+                    {race.name}
                   </a>
+                ) : (
+                  race.name
                 )}
               </td>
+              <td className="whitespace-nowrap py-2 pr-3">{race.distance}</td>
+              <td className="whitespace-nowrap py-2">{race.time}</td>
             </tr>
           ))}
         </tbody>
