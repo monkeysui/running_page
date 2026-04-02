@@ -29,17 +29,17 @@
 /* 1. System Theme (Base) */
 @media (prefers-color-scheme: light) {
   :root {
-    --color-brand: #1895c7;
-    --color-secondary: #1280ae;
-    --color-bg: #f8fafb;
-    --color-tx: #1a3a4a;
-    --color-hr: #e2e8f0;
-    --color-selected: #1895c7;
-    --color-run-date: #334155;
-    --color-run-table-thead: #475569;
-    --color-run-row-hover-background: #e0f2fe;
-    --color-activity-card: #ffffff;
-    --svg-color-active-cell: #7dd3fc;
+    --color-brand: #e73725;
+    --color-secondary: #c42f1f;
+    --color-bg: #ffffff;
+    --color-tx: #010000;
+    --color-hr: #e1e1e1;
+    --color-selected: #e73725;
+    --color-run-date: #333333;
+    --color-run-table-thead: #555555;
+    --color-run-row-hover-background: #fde8e6;
+    --color-activity-card: #e1e1e1;
+    --svg-color-active-cell: #f28a82;
     --svg-special-color: #d4a574;
     --svg-special-color2: #c5756b;
     --font-sans: 'IBM Plex Sans', sans-serif;
@@ -49,17 +49,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* custom brand color */
-    --color-brand: #4db8e0;
-    --color-secondary: #1895c7;
-    --color-bg: #0f1a21;
-    --color-tx: #e0f2fe;
-    --color-hr: #1e3a4a;
-    --color-selected: #4db8e0;
-    --color-run-date: #cbd5e1;
-    --color-run-table-thead: #94a3b8;
-    --color-run-row-hover-background: #1e3a4a;
-    --color-activity-card: #162530;
+    --color-brand: #f05545;
+    --color-secondary: #e73725;
+    --color-bg: #0a0a0a;
+    --color-tx: #e8e8e8;
+    --color-hr: #2a2a2a;
+    --color-selected: #f05545;
+    --color-run-date: #cccccc;
+    --color-run-table-thead: #999999;
+    --color-run-row-hover-background: #2a1a18;
+    --color-activity-card: #1a1a1a;
     --svg-color-active-cell: #4dd2ff;
     --svg-special-color: #f7d02c;
     --svg-special-color2: #f56c6c;
@@ -70,18 +69,18 @@
 
 /* 2. Manual Override (Higher Priority) */
 [data-theme='light'] {
-  --color-brand: #1895c7;
-  --color-secondary: #1280ae;
-  --color-bg: #f8fafb;
-  --color-tx: #1a3a4a;
-  --color-hr: #e2e8f0;
-  --color-selected: #1895c7;
-  --color-run-date: #334155;
-  --color-run-table-thead: #475569;
-  --color-run-row-hover-background: #e0f2fe;
-  --color-activity-card: #ffffff;
-  --svg-color-inactive-cell: #cbd5e1;
-  --svg-color-active-cell: #7dd3fc;
+  --color-brand: #e73725;
+  --color-secondary: #c42f1f;
+  --color-bg: #ffffff;
+  --color-tx: #010000;
+  --color-hr: #e1e1e1;
+  --color-selected: #e73725;
+  --color-run-date: #333333;
+  --color-run-table-thead: #555555;
+  --color-run-row-hover-background: #fde8e6;
+  --color-activity-card: #e1e1e1;
+  --svg-color-inactive-cell: #cccccc;
+  --svg-color-active-cell: #f28a82;
   --svg-special-color: #d4a574;
   --svg-special-color2: #c5756b;
   --font-sans: 'IBM Plex Sans', sans-serif;
@@ -89,17 +88,16 @@
 }
 
 [data-theme='dark'] {
-  /* custom brand color */
-  --color-brand: #4db8e0;
-  --color-secondary: #1895c7;
-  --color-bg: #0f1a21;
-  --color-tx: #e0f2fe;
-  --color-hr: #1e3a4a;
-  --color-selected: #4db8e0;
-  --color-run-date: #cbd5e1;
-  --color-run-table-thead: #94a3b8;
-  --color-run-row-hover-background: #1e3a4a;
-  --color-activity-card: #162530;
+  --color-brand: #f05545;
+  --color-secondary: #e73725;
+  --color-bg: #0a0a0a;
+  --color-tx: #e8e8e8;
+  --color-hr: #2a2a2a;
+  --color-selected: #f05545;
+  --color-run-date: #cccccc;
+  --color-run-table-thead: #999999;
+  --color-run-row-hover-background: #2a1a18;
+  --color-activity-card: #1a1a1a;
   --svg-color-active-cell: #4dd2ff;
   --svg-special-color: #f7d02c;
   --svg-special-color2: #f56c6c;

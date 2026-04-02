@@ -170,23 +170,23 @@ export {
   INVALID_ROUTE_DATA,
 };
 
-const nike = '#4db8e0'; // if you want to change the main color, modify this value in src/styles/variables.scss
+const nike = '#e73725';
 const dark_vanilla = 'rgb(228,212,220)';
 
 // If your map has an offset please change this line
 // issues #92 and #198
 export const NEED_FIX_MAP = false;
 export const MAIN_COLOR = nike;
-export const PROVINCE_FILL_COLOR = '#1895c7';
+export const PROVINCE_FILL_COLOR = '#e73725';
 export const COUNTRY_FILL_COLOR = dark_vanilla;
 
 // Static color constants
-export const RUN_COLOR_LIGHT = '#1895c7';
-export const RUN_COLOR_DARK = MAIN_COLOR;
+export const RUN_COLOR_LIGHT = '#e73725';
+export const RUN_COLOR_DARK = '#f05545';
 
 // Single run animation colors
-export const SINGLE_RUN_COLOR_LIGHT = '#52c41a'; // Green for light theme
-export const SINGLE_RUN_COLOR_DARK = '#ff4d4f'; // Red for dark theme
+export const SINGLE_RUN_COLOR_LIGHT = '#52c41a';
+export const SINGLE_RUN_COLOR_DARK = '#ff4d4f';
 
 // Helper function to get theme-aware RUN_COLOR
 export const getRuntimeRunColor = (): string => {
