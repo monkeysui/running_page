@@ -1,7 +1,6 @@
 .activityList {
-  padding: 20px 20px 0 20px;
-  background-color: var(--color-background);
-  color: var(--color-primary);
+  padding: 8px 0 0 0;
+  color: var(--color-text-primary);
 }
 
 /* Default scrollbar color variables for this component. You can override these in a higher-level CSS or :root. */
@@ -10,74 +9,96 @@
   --color-scrollbar-thumb-hover: var(--color-primary, rgba(0, 0, 0, 0.6));
 }
 
-/* rc-virtual-list renders its scrollbar elements with classnames we can target globally. */
 :global(.rc-virtual-list-scrollbar) {
   background: transparent;
 }
 
 :global(.rc-virtual-list-scrollbar-thumb) {
-  background: var(--color-scrollbar-thumb) !important;
+  background: var(--color-surface-variant) !important;
   border-radius: 4px;
 }
 
 :global(.rc-virtual-list-scrollbar-thumb:hover) {
-  background: var(--color-scrollbar-thumb-hover) !important;
+  background: var(--color-on-surface-variant) !important;
 }
 
+/* ---- Filter pill bar ---- */
 .filterContainer {
   display: flex;
-  justify-content: center;
   gap: 10px;
-  margin-bottom: 20px;
-  overflow: visible;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .filterContainer select {
   appearance: none;
-  width: 90px;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid var(--color-run-table-thead);
-  background-color: var(--color-run-row-hover-background);
-  color: var(--color-run-table-thead);
+  -webkit-appearance: none;
+  padding: 10px 36px 10px 18px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  background-color: var(--color-surface-container-high);
+  color: var(--color-text-primary);
   cursor: pointer;
-  text-align: center;
   text-transform: capitalize;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   box-sizing: border-box;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa0a6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  transition: all 0.2s;
+}
+
+.filterContainer select:hover {
+  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
 }
 
 .summaryContainer {
-  /* display: grid;
-  justify-content: center;
-  grid-template-columns: repeat(auto-fit, minmax(280px, auto));
-  gap: 20px; */
-  /* position: relative; */
   width: 100%;
   height: 100%;
-  /* overflow: auto;
-  will-change: transform; */
 }
 
+/* ---- Stat Card (kinetic-noir inspired) ---- */
 .activityCard {
-  background-color: var(--color-run-row-hover-background);
-  border: 1px solid var(--color-activity-card);
-  border-radius: 8px;
-  padding: 16px;
+  background-color: var(--color-surface-container);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  border-radius: 16px;
   width: 280px;
-  box-shadow: 0 4px 8px var(--color-run-row-hover-background);
-  transition: transform 0.2s;
+  box-sizing: border-box;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
   position: relative;
+  overflow: hidden;
+}
+
+.activityCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-brand),
+    color-mix(in srgb, var(--color-brand) 40%, transparent)
+  );
+  z-index: 1;
 }
 
 .activityCard:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--color-brand) 40%, transparent);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
-/* Flip card styles */
 .activityCardFlippable {
   perspective: 1000px;
-  padding: 0;
-  /* Remove padding for flippable cards */
 }
 
 .cardInner {
@@ -95,10 +116,10 @@
 .cardBack {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  border-radius: 8px;
-  padding: 16px;
+  padding: 22px 20px 18px;
   box-sizing: border-box;
-  background-color: var(--color-run-row-hover-background);
+  background-color: var(--color-surface-container);
+  border-radius: 16px;
 }
 
 .cardBack {
@@ -110,7 +131,6 @@
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
   overflow: hidden;
 }
 
@@ -119,87 +139,134 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: 16px;
+  padding: 16px 0 0;
   max-height: 100%;
   overflow: hidden;
 }
 
 .activityName {
-  font-size: 1.5em;
-  margin-bottom: 10px;
-  color: var(--color-primary);
+  font-family: var(--font-headline);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin: 0 0 18px;
+  line-height: 1.1;
+}
+
+/* Grid-based stat list */
+.activityDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 12px;
 }
 
 .activityDetails p {
-  margin: 8px 0;
-  color: var(--color-run-table-thead);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--color-text-primary);
 }
 
 .activityDetails strong {
-  color: var(--color-primary);
+  font-family: var(--font-headline);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  display: block;
 }
 
+.statValue {
+  font-family: var(--font-headline);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.statUnit {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+  margin-left: 4px;
+}
+
+/* Mini chart area (replaces recharts for compact view) */
 .chart {
-  height: 250px;
+  grid-column: 1 / -1;
+  height: 60px;
   width: 100%;
-  background-color: var(--color-activity-card);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px;
+  align-items: flex-end;
+  gap: 3px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 8%, transparent);
 }
 
-.smallHomeButton {
-  width: 90px;
-  padding: 4px 12px;
-  background-color: var(--color-primary);
-  color: var(--color-background);
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-right: 20px;
+.chartBar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  background-color: color-mix(in srgb, var(--color-brand) 22%, transparent);
+  transition: background-color 0.25s ease;
+  min-height: 2px;
 }
 
-.smallHomeButton:hover {
-  background-color: var(--color-secondary);
+.activityCard:hover .chartBar {
+  background-color: var(--color-brand);
 }
 
+.chartEmpty {
+  background-color: color-mix(in srgb, var(--color-text-primary) 6%, transparent) !important;
+}
+
+/* ---- Life view ---- */
 .lifeContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 8px 0;
 }
 
 .yearSelector {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
   justify-content: center;
   margin-bottom: 20px;
-  padding: 10px;
+  padding: 6px;
+  background-color: var(--color-surface-container-low);
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
 }
 
 .yearButton {
-  padding: 8px 16px;
+  padding: 8px 18px;
   background-color: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 5px;
+  color: var(--color-on-surface-variant);
+  border: none;
+  border-radius: 9999px;
   cursor: pointer;
-  font-size: 14px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   transition: all 0.2s;
 }
 
 .yearButton:hover {
-  background-color: var(--color-primary);
-  color: var(--color-background);
+  color: var(--color-text-primary);
 }
 
 .yearButtonActive {
-  background-color: var(--color-primary);
-  color: var(--color-background);
+  background-color: var(--color-surface-variant);
+  color: var(--color-text-primary);
+  font-weight: 700;
 }
 
 .yearSummarySvg {
@@ -208,22 +275,18 @@
   max-height: 80vh;
 }
 
-/* Inner wrapper to center the virtual list rows and constrain width */
 .summaryInner {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 10px;
 }
 
-/* Prevent content from sitting flush against the custom scrollbar. The inner wrapper (direct child) gets right padding. */
 .summaryInner > div {
   padding-right: 16px;
   box-sizing: content-box;
 }
 
-/* Row container used by VirtualList rows */
 .rowContainer {
   display: flex;
   padding: 10px 0;
@@ -232,7 +295,6 @@
   box-sizing: border-box;
 }
 
-/* rc-virtual-list view and body panes: ensure there's a little inner spacing so content doesn't overlap scrollbar */
 :global(.rc-virtual-list-holder-inner),
 :global(.rc-virtual-list-holder) {
   padding-right: 4px;

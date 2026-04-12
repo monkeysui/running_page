@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import useActivities from '@/hooks/useActivities';
-import { M_TO_DIST, DIST_UNIT } from '@/utils/utils';
+import { M_TO_DIST } from '@/utils/utils';
 
 interface IMonthlyChartProps {
   year: string;
@@ -50,13 +50,10 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
 
   const data = year === 'Total' ? yearlyData : monthlyData;
   const maxDistance = Math.max(...data.map((d) => d.distance), 1);
-  const title =
-    year === 'Total' ? `年度 ${DIST_UNIT}` : `${year} 月度 ${DIST_UNIT}`;
 
   return (
-    <div className="flex flex-1 flex-col rounded-2xl bg-[var(--color-activity-card)] p-4">
-      <h3 className="mb-3 text-sm font-medium opacity-60">{title}</h3>
-      <div className="flex h-48 items-end gap-1.5">
+    <div className="flex flex-1 flex-col">
+      <div className="flex h-56 items-end gap-2">
         {data.map((d) => {
           const heightPct = (d.distance / maxDistance) * 100;
           return (
@@ -66,17 +63,23 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
               style={{ height: '100%' }}
             >
               {d.distance > 0 && (
-                <span className="mb-1 text-[10px] opacity-60">
+                <span className="mb-1 text-[10px] font-semibold opacity-70">
                   {d.distance.toFixed(0)}
                 </span>
               )}
               <div
-                className="w-full rounded-t bg-[var(--color-brand)] transition-all"
+                className="w-full rounded-t-md transition-all hover:opacity-100"
                 style={{
-                  height: d.distance > 0 ? `${Math.max(heightPct, 3)}%` : '0',
+                  height: d.distance > 0 ? `${Math.max(heightPct, 3)}%` : '2px',
+                  background:
+                    d.distance > 0
+                      ? 'linear-gradient(180deg, var(--color-brand), color-mix(in srgb, var(--color-brand) 30%, transparent))'
+                      : 'var(--color-surface-variant)',
                 }}
               />
-              <span className="mt-1 text-[10px] opacity-50">{d.label}</span>
+              <span className="text-muted mt-2 text-[10px] font-bold uppercase tracking-wider">
+                {d.label}
+              </span>
             </div>
           );
         })}

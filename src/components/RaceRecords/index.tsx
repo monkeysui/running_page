@@ -71,9 +71,20 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
   if (races.length === 0) return null;
 
   return (
-    <div className="rounded-2xl bg-[var(--color-activity-card)] p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-lg font-bold italic">马拉松记录</h3>
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <svg
+            className="h-6 w-6"
+            style={{ color: 'var(--color-brand)' }}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M6 3h12v2a6 6 0 01-4 5.66V14h3a1 1 0 011 1v1H8v-1a1 1 0 011-1h3v-3.34A6 6 0 018 5V3z" />
+            <path d="M9 19h6v2H9z" />
+          </svg>
+          <h3 className="font-headline text-xl font-bold">Marathon Records</h3>
+        </div>
         {totalPages > 1 && (
           <div className="flex items-center gap-2 text-xs opacity-60">
             <button

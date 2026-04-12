@@ -21,11 +21,9 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
   }, [year]);
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-[var(--color-activity-card)] p-4">
-      <Suspense fallback={<div className="text-center">Loading...</div>}>
-        <SvgComponent className="github-svg h-auto w-full" />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="text-center">Loading...</div>}>
+      <SvgComponent className="github-svg h-auto w-full" />
+    </Suspense>
   );
 };
 

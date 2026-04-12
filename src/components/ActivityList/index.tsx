@@ -7,17 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts';
 import VirtualList from 'rc-virtual-list';
-import { useNavigate } from 'react-router-dom';
 import activities from '@/static/activities.json';
 import styles from './style.module.css';
 import { ACTIVITY_TOTAL, LOADING_TEXT } from '@/utils/const';
@@ -96,11 +86,6 @@ interface DisplaySummary {
   averageHeartRate?: number; // Add heart rate display
 }
 
-interface ChartData {
-  day: number;
-  distance: string;
-}
-
 interface ActivityCardProps {
   period: string;
   summary: DisplaySummary;
@@ -118,6 +103,38 @@ type IntervalType = 'year' | 'month' | 'week' | 'day' | 'life';
 // A row group contains multiple activity card data items that will be rendered in one virtualized row
 type RowGroup = Array<{ period: string; summary: ActivitySummary }>;
 
+const formatTime = (seconds: number): string => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m ${s}s`;
+};
+
+const formatPace = (speed: number): string => {
+  if (speed === 0) return `0:00`;
+  const pace = 60 / speed;
+  const totalSeconds = Math.round(pace * 60);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+};
+
+interface StatItemProps {
+  label: string;
+  value: string;
+  unit?: string;
+}
+const StatItem: React.FC<StatItemProps> = ({ label, value, unit }) => (
+  <p>
+    <strong>{label}</strong>
+    <span>
+      <span className={styles.statValue}>{value}</span>
+      {unit && <span className={styles.statUnit}>{unit}</span>}
+    </span>
+  </p>
+);
+
 const ActivityCardInner: React.FC<ActivityCardProps> = ({
   period,
   summary,
@@ -131,48 +148,27 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
       setIsFlipped(!isFlipped);
     }
   };
-  const generateLabels = (): number[] => {
+
+  // Build mini bar chart data (full resolution — month 28-31, year 12, week 7)
+  const barValues: number[] = useMemo(() => {
     if (interval === 'month') {
       const [year, month] = period.split('-').map(Number);
-      const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
-      return Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    } else if (interval === 'week') {
-      return Array.from({ length: 7 }, (_, i) => i + 1);
-    } else if (interval === 'year') {
-      return Array.from({ length: 12 }, (_, i) => i + 1); // Generate months 1 to 12
+      const daysInMonth = new Date(year, month, 0).getDate();
+      return Array.from(
+        { length: daysInMonth },
+        (_, i) => dailyDistances[i] || 0
+      );
+    }
+    if (interval === 'week') {
+      return Array.from({ length: 7 }, (_, i) => dailyDistances[i] || 0);
+    }
+    if (interval === 'year') {
+      return Array.from({ length: 12 }, (_, i) => dailyDistances[i] || 0);
     }
     return [];
-  };
+  }, [interval, period, dailyDistances]);
 
-  const data: ChartData[] = generateLabels().map((day) => ({
-    day,
-    distance: (dailyDistances[day - 1] || 0).toFixed(2), // Keep two decimal places
-  }));
-
-  const formatTime = (seconds: number): string => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    return `${h}h ${m}m ${s}s`;
-  };
-
-  const formatPace = (speed: number): string => {
-    if (speed === 0) return `0:00 min/${DIST_UNIT}`;
-    const pace = 60 / speed; // min/DIST_UNIT
-    const totalSeconds = Math.round(pace * 60); // Total seconds per DIST_UNIT
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds} min/${DIST_UNIT}`;
-  };
-
-  // Calculate Y-axis maximum value and ticks
-  const yAxisMax = Math.ceil(
-    Math.max(...data.map((d) => parseFloat(d.distance))) + 10
-  ); // Round up and add buffer
-  const yAxisTicks = Array.from(
-    { length: Math.ceil(yAxisMax / 5) + 1 },
-    (_, i) => i * 5
-  ); // Generate arithmetic sequence
+  const maxBar = Math.max(...barValues, 0.0001);
 
   return (
     <div
@@ -188,100 +184,90 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
         <div className={styles.cardFront}>
           <h2 className={styles.activityName}>{period}</h2>
           <div className={styles.activityDetails}>
-            <p>
-              <strong>{ACTIVITY_TOTAL.TOTAL_DISTANCE_TITLE}:</strong>{' '}
-              {summary.totalDistance.toFixed(2)} {DIST_UNIT}
-            </p>
-            {SHOW_ELEVATION_GAIN &&
-              summary.totalElevationGain !== undefined && (
-                <p>
-                  <strong>{ACTIVITY_TOTAL.TOTAL_ELEVATION_GAIN_TITLE}:</strong>{' '}
-                  {summary.totalElevationGain.toFixed(0)} m
-                </p>
-              )}
-            <p>
-              <strong>{ACTIVITY_TOTAL.AVERAGE_SPEED_TITLE}:</strong>{' '}
-              {formatPace(summary.averageSpeed)}
-            </p>
-            <p>
-              <strong>{ACTIVITY_TOTAL.TOTAL_TIME_TITLE}:</strong>{' '}
-              {formatTime(summary.totalTime)}
-            </p>
-            {summary.averageHeartRate !== undefined && (
-              <p>
-                <strong>{ACTIVITY_TOTAL.AVERAGE_HEART_RATE_TITLE}:</strong>{' '}
-                {summary.averageHeartRate.toFixed(0)} bpm
-              </p>
+            <StatItem
+              label={ACTIVITY_TOTAL.TOTAL_DISTANCE_TITLE}
+              value={summary.totalDistance.toFixed(2)}
+              unit={DIST_UNIT}
+            />
+            <StatItem
+              label={ACTIVITY_TOTAL.AVERAGE_SPEED_TITLE}
+              value={formatPace(summary.averageSpeed)}
+              unit={`min/${DIST_UNIT}`}
+            />
+            <StatItem
+              label={ACTIVITY_TOTAL.TOTAL_TIME_TITLE}
+              value={formatTime(summary.totalTime)}
+            />
+            {summary.averageHeartRate !== undefined ? (
+              <StatItem
+                label={ACTIVITY_TOTAL.AVERAGE_HEART_RATE_TITLE}
+                value={summary.averageHeartRate.toFixed(0)}
+                unit="bpm"
+              />
+            ) : (
+              interval !== 'day' && (
+                <StatItem
+                  label={ACTIVITY_TOTAL.ACTIVITY_COUNT_TITLE}
+                  value={summary.count.toString()}
+                />
+              )
             )}
             {interval !== 'day' && (
               <>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.ACTIVITY_COUNT_TITLE}:</strong>{' '}
-                  {summary.count}
-                </p>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.MAX_DISTANCE_TITLE}:</strong>{' '}
-                  {summary.maxDistance.toFixed(2)} {DIST_UNIT}
-                </p>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.MAX_SPEED_TITLE}:</strong>{' '}
-                  {formatPace(summary.maxSpeed)}
-                </p>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.AVERAGE_DISTANCE_TITLE}:</strong>{' '}
-                  {(summary.totalDistance / summary.count).toFixed(2)}{' '}
-                  {DIST_UNIT}
-                </p>
+                {summary.averageHeartRate !== undefined && (
+                  <StatItem
+                    label={ACTIVITY_TOTAL.ACTIVITY_COUNT_TITLE}
+                    value={summary.count.toString()}
+                  />
+                )}
+                <StatItem
+                  label={ACTIVITY_TOTAL.MAX_DISTANCE_TITLE}
+                  value={summary.maxDistance.toFixed(2)}
+                  unit={DIST_UNIT}
+                />
+                <StatItem
+                  label={ACTIVITY_TOTAL.MAX_SPEED_TITLE}
+                  value={formatPace(summary.maxSpeed)}
+                  unit={`min/${DIST_UNIT}`}
+                />
+                <StatItem
+                  label={ACTIVITY_TOTAL.AVERAGE_DISTANCE_TITLE}
+                  value={(summary.totalDistance / summary.count).toFixed(2)}
+                  unit={DIST_UNIT}
+                />
               </>
             )}
-            {['month', 'week', 'year'].includes(interval) && (
-              <div className={styles.chart}>
-                <ResponsiveContainer>
-                  <BarChart
-                    data={data}
-                    margin={{ top: 20, right: 20, left: -20, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="var(--color-run-row-hover-background)"
-                    />
-                    <XAxis
-                      dataKey="day"
-                      tick={{ fill: 'var(--color-run-table-thead)' }}
-                    />
-                    <YAxis
-                      label={{
-                        value: DIST_UNIT,
-                        angle: -90,
-                        position: 'insideLeft',
-                        fill: 'var(--color-run-table-thead)',
-                      }}
-                      domain={[0, yAxisMax]}
-                      ticks={yAxisTicks}
-                      tick={{ fill: 'var(--color-run-table-thead)' }}
-                    />
-                    <Tooltip
-                      formatter={(value) => `${value} ${DIST_UNIT}`}
-                      contentStyle={{
-                        backgroundColor:
-                          'var(--color-run-row-hover-background)',
-                        border:
-                          '1px solid var(--color-run-row-hover-background)',
-                        color: 'var(--color-run-table-thead)',
-                      }}
-                      labelStyle={{ color: 'var(--color-primary)' }}
-                    />
-                    <Bar dataKey="distance" fill="var(--color-primary)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
+            {SHOW_ELEVATION_GAIN &&
+              summary.totalElevationGain !== undefined && (
+                <StatItem
+                  label={ACTIVITY_TOTAL.TOTAL_ELEVATION_GAIN_TITLE}
+                  value={summary.totalElevationGain.toFixed(0)}
+                  unit="m"
+                />
+              )}
+            {['month', 'week', 'year'].includes(interval) &&
+              barValues.length > 0 && (
+                <div className={styles.chart}>
+                  {barValues.map((v, i) => {
+                    const pct = (v / maxBar) * 100;
+                    const isEmpty = v <= 0;
+                    return (
+                      <div
+                        key={i}
+                        className={`${styles.chartBar} ${isEmpty ? styles.chartEmpty : ''}`}
+                        style={{ height: `${Math.max(pct, isEmpty ? 8 : 4)}%` }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
           </div>
         </div>
 
         {/* Back side - Route preview */}
         {interval === 'day' && activities.length > 0 && (
           <div className={styles.cardBack}>
+            <h2 className={styles.activityName}>{period}</h2>
             <div className={styles.routeContainer}>
               <RoutePreview activities={activities} />
             </div>
@@ -414,12 +400,6 @@ const ActivityList: React.FC = () => {
       setSportType('all');
     }
   }, [interval, sportType]);
-
-  const navigate = useNavigate();
-
-  const handleHomeClick = () => {
-    navigate('/');
-  };
 
   function toggleInterval(newInterval: IntervalType): void {
     setInterval(newInterval);

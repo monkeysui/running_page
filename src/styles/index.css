@@ -1,6 +1,8 @@
 /* IBM Plex Sans and IBM Plex Mono fonts */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+/* Inter + Manrope (i-running inspired UI) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
 /* LXGW WenKai for running quotes (Chinese), Playfair Display for English */
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
@@ -29,82 +31,123 @@
   --font-mono: var(--font-mono);
 }
 
+/* Shared i-running inspired tokens */
+:root {
+  --font-headline: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-accent-purple: #a88bff;
+  --color-accent-red: #ff7351;
+  --color-accent-yellow: #ffc857;
+}
+
 /* 1. System Theme (Base) */
 @media (prefers-color-scheme: light) {
   :root {
-    --color-brand: #e73725;
-    --color-secondary: #c42f1f;
-    --color-bg: #ffffff;
-    --color-tx: #010000;
-    --color-hr: #e1e1e1;
-    --color-selected: #e73725;
+    --color-brand: #1895c7;
+    --color-secondary: #4fc3f7;
+    --color-bg: #f5f7fa;
+    --color-tx: #0e1420;
+    --color-hr: #e1e6ed;
+    --color-selected: #1895c7;
     --color-run-date: #333333;
     --color-run-table-thead: #555555;
-    --color-run-row-hover-background: #fde8e6;
-    --color-activity-card: #e1e1e1;
-    --svg-color-active-cell: #f28a82;
+    --color-run-row-hover-background: #e0f2f9;
+    --color-activity-card: #ffffff;
+    --color-surface: #f5f7fa;
+    --color-surface-container: #ffffff;
+    --color-surface-container-low: #f0f3f7;
+    --color-surface-container-high: #ffffff;
+    --color-surface-container-highest: #ffffff;
+    --color-surface-variant: #e6ebf1;
+    --color-on-surface: #0e1420;
+    --color-on-surface-variant: #5c6773;
+    --svg-color-active-cell: #1895c7;
     --svg-special-color: #d4a574;
     --svg-special-color2: #c5756b;
-    --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-brand: #f05545;
-    --color-secondary: #e73725;
-    --color-bg: #0a0a0a;
-    --color-tx: #e8e8e8;
-    --color-hr: #2a2a2a;
-    --color-selected: #f05545;
+    --color-brand: #1895c7;
+    --color-secondary: #4fc3f7;
+    --color-bg: #0e0e0e;
+    --color-tx: #ffffff;
+    --color-hr: #262626;
+    --color-selected: #1895c7;
     --color-run-date: #cccccc;
-    --color-run-table-thead: #999999;
-    --color-run-row-hover-background: #2a1a18;
-    --color-activity-card: #1a1a1a;
-    --svg-color-active-cell: #4dd2ff;
-    --svg-special-color: #f7d02c;
-    --svg-special-color2: #f56c6c;
-    --font-sans: 'IBM Plex Sans', sans-serif;
+    --color-run-table-thead: #9aa0a6;
+    --color-run-row-hover-background: #131b22;
+    --color-activity-card: #161616;
+    --color-surface: #0e0e0e;
+    --color-surface-container: #161616;
+    --color-surface-container-low: #131313;
+    --color-surface-container-high: #1c1c1c;
+    --color-surface-container-highest: #222222;
+    --color-surface-variant: #262626;
+    --color-on-surface: #ffffff;
+    --color-on-surface-variant: #adaaaa;
+    --svg-color-active-cell: #1895c7;
+    --svg-special-color: #4fc3f7;
+    --svg-special-color2: #ff7351;
+    --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
 
 /* 2. Manual Override (Higher Priority) */
 [data-theme='light'] {
-  --color-brand: #e73725;
-  --color-secondary: #c42f1f;
-  --color-bg: #ffffff;
-  --color-tx: #010000;
-  --color-hr: #e1e1e1;
-  --color-selected: #e73725;
+  --color-brand: #1895c7;
+  --color-secondary: #4fc3f7;
+  --color-bg: #f5f7fa;
+  --color-tx: #0e1420;
+  --color-hr: #e1e6ed;
+  --color-selected: #1895c7;
   --color-run-date: #333333;
   --color-run-table-thead: #555555;
-  --color-run-row-hover-background: #fde8e6;
-  --color-activity-card: #e1e1e1;
-  --svg-color-inactive-cell: #cccccc;
-  --svg-color-active-cell: #f28a82;
-  --svg-special-color: #d4a574;
-  --svg-special-color2: #c5756b;
-  --font-sans: 'IBM Plex Sans', sans-serif;
+  --color-run-row-hover-background: #e0f2f9;
+  --color-activity-card: #ffffff;
+  --color-surface: #f5f7fa;
+  --color-surface-container: #ffffff;
+  --color-surface-container-low: #f0f3f7;
+  --color-surface-container-high: #ffffff;
+  --color-surface-container-highest: #ffffff;
+  --color-surface-variant: #e6ebf1;
+  --color-on-surface: #0e1420;
+  --color-on-surface-variant: #5c6773;
+  --svg-color-inactive-cell: #d7dce3;
+  --svg-color-active-cell: #1895c7;
+  --svg-special-color: #4fc3f7;
+  --svg-special-color2: #ff7351;
+  --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
 [data-theme='dark'] {
-  --color-brand: #f05545;
-  --color-secondary: #e73725;
-  --color-bg: #0a0a0a;
-  --color-tx: #e8e8e8;
-  --color-hr: #2a2a2a;
-  --color-selected: #f05545;
+  --color-brand: #1895c7;
+  --color-secondary: #4fc3f7;
+  --color-bg: #0e0e0e;
+  --color-tx: #ffffff;
+  --color-hr: #262626;
+  --color-selected: #1895c7;
   --color-run-date: #cccccc;
-  --color-run-table-thead: #999999;
-  --color-run-row-hover-background: #2a1a18;
-  --color-activity-card: #1a1a1a;
-  --svg-color-active-cell: #4dd2ff;
-  --svg-special-color: #f7d02c;
-  --svg-special-color2: #f56c6c;
-  --font-sans: 'IBM Plex Sans', sans-serif;
+  --color-run-table-thead: #9aa0a6;
+  --color-run-row-hover-background: #131b22;
+  --color-activity-card: #161616;
+  --color-surface: #0e0e0e;
+  --color-surface-container: #161616;
+  --color-surface-container-low: #131313;
+  --color-surface-container-high: #1c1c1c;
+  --color-surface-container-highest: #222222;
+  --color-surface-variant: #262626;
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #adaaaa;
+  --svg-color-inactive-cell: #1f1f1f;
+  --svg-color-active-cell: #1895c7;
+  --svg-special-color: #4fc3f7;
+  --svg-special-color2: #ff7351;
+  --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
@@ -112,11 +155,56 @@
   html,
   body {
     background-color: var(--color-background);
-    color: var(--color-brand);
+    color: var(--color-text-primary);
     transition:
       background-color 0.1s ease,
       color 0.1s ease;
     font-family: var(--font-sans);
+  }
+}
+
+@layer utilities {
+  .font-headline {
+    font-family: var(--font-headline);
+    letter-spacing: -0.02em;
+  }
+  .glow-brand {
+    box-shadow: 0 0 40px rgba(24, 149, 199, 0.18);
+  }
+  .glow-brand-soft {
+    box-shadow: 0 0 60px rgba(24, 149, 199, 0.08);
+  }
+  .bg-surface-card {
+    background-color: var(--color-surface-container);
+  }
+  .bg-surface-card-low {
+    background-color: var(--color-surface-container-low);
+  }
+  .bg-surface-card-high {
+    background-color: var(--color-surface-container-high);
+  }
+  .bg-surface-variant {
+    background-color: var(--color-surface-variant);
+  }
+  .text-muted {
+    color: var(--color-on-surface-variant);
+  }
+  .mini-trend-bg {
+    background-image: url("data:image/svg+xml,%3Csvg width='200' height='100' viewBox='0 0 200 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 80 Q 25 20, 50 70 T 100 40 T 150 80 T 200 30' fill='none' stroke='%231895c7' stroke-width='2' opacity='0.25'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: 60% auto;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-surface-variant);
+    border-radius: 10px;
   }
 }
 
