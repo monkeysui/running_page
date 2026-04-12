@@ -54,7 +54,7 @@ const SummaryPage = () => {
       totalActivities: acts.length,
       avgHr,
       totalHours,
-      yearsSpan: years.size,
+      yearsCount: years.size,
       tier,
     };
   }, []);
@@ -82,9 +82,9 @@ const SummaryPage = () => {
             <span
               style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
             >
-              {seasonStats.yearsSpan}
+              {seasonStats.yearsCount}
             </span>{' '}
-            个赛季。
+            年。
           </p>
         </div>
       </section>
