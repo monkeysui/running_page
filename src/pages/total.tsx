@@ -41,14 +41,14 @@ const SummaryPage = () => {
     const totalHours = totalSeconds / 3600;
     const tier =
       distanceKm > 2000
-        ? 'Elite'
+        ? '精英'
         : distanceKm > 1000
-          ? 'Advanced'
+          ? '进阶'
           : distanceKm > 500
-            ? 'Consistent'
+            ? '稳定'
             : distanceKm > 100
-              ? 'Starter'
-              : 'Rookie';
+              ? '入门'
+              : '新手';
     return {
       totalDistance: distanceKm,
       totalActivities: acts.length,
@@ -78,14 +78,13 @@ const SummaryPage = () => {
             <span style={{ color: 'var(--color-brand)' }}>Pulse</span>
           </h1>
           <p className="text-muted mt-4 max-w-xl text-sm leading-relaxed">
-            High-fidelity breakdown by year / month / week / day. Tracking
-            distance, pace, heart rate and volume peaks across{' '}
+            按年 / 月 / 周 / 日维度拆解，追踪距离、配速、心率与训练量峰值，横跨{' '}
             <span
               style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
             >
               {seasonStats.yearsSpan}
             </span>{' '}
-            seasons.
+            个赛季。
           </p>
         </div>
       </section>
@@ -105,22 +104,22 @@ const SummaryPage = () => {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <FooterStat
             value={seasonStats.totalDistance.toFixed(1)}
-            label={`Total ${DIST_UNIT}`}
+            label={`累计 ${DIST_UNIT}`}
             accent
           />
           <FooterStat
             value={seasonStats.totalActivities.toString()}
-            label="Total Activities"
+            label="累计活动"
           />
           <FooterStat
             value={
               seasonStats.avgHr > 0 ? seasonStats.avgHr.toString() : '—'
             }
-            label="Avg Heart Rate"
+            label="平均心率"
           />
           <FooterStat
             value={seasonStats.tier}
-            label="Activity Tier"
+            label="运动等级"
             accentColor="var(--color-accent-purple)"
           />
         </div>

@@ -91,7 +91,7 @@ const ProgressCard = ({ title, current, goal, unit }: ProgressCardProps) => {
           {current.toFixed(1)} {unit}
         </span>
         <span>
-          Goal: {goal} {unit}
+          目标: {goal} {unit}
         </span>
       </div>
     </div>
@@ -308,7 +308,7 @@ const Index = () => {
           <p className="text-muted mt-2 text-sm">{infoMessage}</p>
         </div>
         <div
-          className="bg-surface-card-low flex flex-wrap items-center gap-1 rounded-full border border-white/5 p-1"
+          className="bg-surface-card-low flex flex-wrap items-center gap-1 overflow-hidden rounded-3xl border border-white/5 p-1"
         >
           {yearsWithTotal.map((y) => (
             <button
@@ -335,22 +335,22 @@ const Index = () => {
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:col-span-8">
           <MetricCard
-            label="Total Frequency"
+            label="累计次数"
             value={allTimeStats.count}
-            unit="times"
+            unit="次"
             icon={IconRepeat}
           />
           <MetricCard
-            label="Total Distance"
+            label="累计距离"
             value={allTimeStats.distanceKm}
             unit={DIST_UNIT}
             icon={IconRoute}
             accent
           />
           <MetricCard
-            label="Total Time"
+            label="累计时长"
             value={allTimeStats.hours}
-            unit="hours"
+            unit="小时"
             icon={IconTimer}
           />
         </div>
@@ -379,20 +379,20 @@ const Index = () => {
                 >
                   <IconBolt className="h-5 w-5" />
                 </div>
-                <h3 className="font-headline text-xl font-bold">Quick Stats</h3>
+                <h3 className="font-headline text-xl font-bold">速览</h3>
                 <span className="text-muted ml-auto text-xs font-medium">
                   {selectedStats.displayYear}
                 </span>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted text-sm">Avg Pace</span>
+                  <span className="text-muted text-sm">平均配速</span>
                   <span className="font-headline text-lg font-bold">
                     {selectedStats.pace}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted text-sm">Avg Heart Rate</span>
+                  <span className="text-muted text-sm">平均心率</span>
                   <span
                     className="font-headline text-lg font-bold"
                     style={{ color: 'var(--color-accent-red)' }}
@@ -401,12 +401,12 @@ const Index = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted text-sm">Current Streak</span>
+                  <span className="text-muted text-sm">连续打卡</span>
                   <span
                     className="font-headline text-lg font-bold"
                     style={{ color: 'var(--color-brand)' }}
                   >
-                    {selectedStats.streak} day
+                    {selectedStats.streak} 天
                   </span>
                 </div>
               </div>
@@ -421,7 +421,7 @@ const Index = () => {
           <div className="flex flex-col gap-6 xl:col-span-4">
             <div className="flex-1">
               <ProgressCard
-                title={`${selectedStats.displayYear} Annual Progress`}
+                title={`${selectedStats.displayYear} 年度进度`}
                 current={selectedStats.yearDistanceKm}
                 goal={YEARLY_GOAL}
                 unit="km"
@@ -429,7 +429,7 @@ const Index = () => {
             </div>
             <div className="flex-1">
               <ProgressCard
-                title={`${selectedStats.displayYear} Monthly Progress`}
+                title={`${selectedStats.displayYear} 月度进度`}
                 current={selectedStats.monthDistanceKm}
                 goal={MONTHLY_GOAL}
                 unit="km"
@@ -440,7 +440,7 @@ const Index = () => {
             <div className="bg-surface-card flex h-full flex-col overflow-hidden rounded-2xl p-6">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-headline text-xl font-bold">
-                  Activity Intensity {year}
+                  {year} 运动热力图
                 </h3>
                 <div className="text-sm font-medium">
                   <span
@@ -451,7 +451,7 @@ const Index = () => {
                   >
                     {selectedStats.yearDistanceKm} km
                   </span>{' '}
-                  <span className="text-muted">Total for {year}</span>
+                  <span className="text-muted">{year} 年累计</span>
                 </div>
               </div>
               <div className="flex flex-1 items-center justify-center">
@@ -468,7 +468,7 @@ const Index = () => {
         <div className="bg-surface-card rounded-2xl p-6 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-headline text-xl font-bold">
-              {year === 'Total' ? 'Yearly Distance' : 'Monthly Distance'}
+              {year === 'Total' ? '年度距离' : '月度距离'}
             </h3>
             <span className="text-muted font-headline text-xs font-bold uppercase tracking-widest">
               {year}
@@ -485,7 +485,7 @@ const Index = () => {
       {year !== 'Total' && (
         <section className="bg-surface-card rounded-2xl p-6">
           <h3 className="font-headline mb-4 text-xl font-bold">
-            Latest Run Logs
+            最近跑步记录
           </h3>
           <RunTable
             runs={runs}
