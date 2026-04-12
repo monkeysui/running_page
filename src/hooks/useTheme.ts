@@ -1,210 +1,46 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MAP_TILE_STYLE_LIGHT, MAP_TILE_STYLE_DARK } from '@/utils/const';
+import { MAP_TILE_STYLE_DARK } from '@/utils/const';
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'dark';
 
-// Custom event name for theme changes
+// Custom event name for theme changes (kept for compatibility)
 export const THEME_CHANGE_EVENT = 'theme-change';
 
 /**
- * Converts a theme value to the corresponding map style
- * @param theme - The current theme ('light' or 'dark')
- * @returns The appropriate map style for the theme
+ * Returns the dark map style (only dark theme is supported)
  */
-export const getMapThemeFromCurrentTheme = (theme: Theme): string => {
-  if (theme === 'dark') return MAP_TILE_STYLE_DARK;
-  return MAP_TILE_STYLE_LIGHT;
+export const getMapThemeFromCurrentTheme = (_theme: Theme): string => {
+  return MAP_TILE_STYLE_DARK;
 };
 
 /**
- * Hook for managing map theme based on application theme
- * @returns The current map theme style
+ * Hook for managing map theme — always dark
  */
 export const useMapTheme = () => {
-  // Initialize map theme based on current settings, default to dark
-  const [mapTheme, setMapTheme] = useState(() => {
-    if (typeof window === 'undefined') return MAP_TILE_STYLE_DARK;
-
-    // Check for explicit theme in DOM
-    const dataTheme = document.documentElement.getAttribute('data-theme');
-    if (dataTheme === 'dark') return MAP_TILE_STYLE_DARK;
-    if (dataTheme === 'light') return MAP_TILE_STYLE_LIGHT;
-
-    // Check for saved theme in localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') return MAP_TILE_STYLE_DARK;
-    if (savedTheme === 'light') return MAP_TILE_STYLE_LIGHT;
-
-    // Default to dark theme
-    return MAP_TILE_STYLE_DARK;
-  });
-
-  /**
-   * Ensures map theme is consistent with application theme
-   */
-  const ensureThemeConsistency = useCallback(() => {
-    if (typeof window === 'undefined') return;
-
-    const dataTheme = document.documentElement.getAttribute('data-theme');
-    const savedTheme = localStorage.getItem('theme');
-
-    let newTheme;
-
-    // Determine the correct theme based on priority:
-    // 1. Explicit DOM attribute
-    // 2. localStorage setting
-    // 3. Default to dark theme
-    if (dataTheme === 'dark') {
-      newTheme = MAP_TILE_STYLE_DARK;
-    } else if (dataTheme === 'light') {
-      newTheme = MAP_TILE_STYLE_LIGHT;
-    } else if (!dataTheme && savedTheme === 'dark') {
-      newTheme = MAP_TILE_STYLE_DARK;
-    } else if (!dataTheme && savedTheme === 'light') {
-      newTheme = MAP_TILE_STYLE_LIGHT;
-    } else {
-      // Default to dark theme
-      newTheme = MAP_TILE_STYLE_DARK;
-    }
-
-    // Only update if theme has changed
-    if (mapTheme !== newTheme) {
-      setMapTheme(newTheme);
-    }
-  }, [mapTheme]);
-
-  // Set up listeners for various theme change events
-  useEffect(() => {
-    // Watch for DOM attribute changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'data-theme'
-        ) {
-          ensureThemeConsistency();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-
-    // Listen for custom theme change events
-    const handleThemeChange = () => ensureThemeConsistency();
-    window.addEventListener(THEME_CHANGE_EVENT, handleThemeChange);
-
-    // Listen for localStorage changes (for multi-tab support)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'theme') {
-        handleThemeChange();
-      }
-    });
-
-    // Initial check
-    ensureThemeConsistency();
-
-    // Clean up all listeners
-    return () => {
-      observer.disconnect();
-      window.removeEventListener(THEME_CHANGE_EVENT, handleThemeChange);
-      window.removeEventListener('storage', handleThemeChange);
-    };
-  }, [ensureThemeConsistency]);
-
-  return mapTheme;
+  return MAP_TILE_STYLE_DARK;
 };
 
 /**
- * Main theme hook for the application
- * @returns Object with current theme and function to change theme
+ * Main theme hook — dark only, no toggle
  */
 export const useTheme = () => {
-  // Initialize theme from localStorage or system preference
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'dark';
-    const saved = localStorage.getItem('theme') as Theme;
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
-  });
+  const [theme] = useState<Theme>('dark');
 
-  /**
-   * Set theme and dispatch event to notify other components
-   */
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
-
-    // Dispatch custom event for theme change
-    const event = new CustomEvent(THEME_CHANGE_EVENT, {
-      detail: { theme: newTheme },
-    });
-    window.dispatchEvent(event);
-  }, []);
-
-  // Apply theme changes to DOM and localStorage
   useEffect(() => {
-    const root = window.document.documentElement;
-
-    // Set attribute and save to localStorage for both themes
-    root.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+  }, []);
 
   return {
     theme,
-    setTheme,
+    setTheme: useCallback(() => {}, []),
   };
 };
 
 /**
- * Hook to trigger re-render when theme changes for dynamic color calculations
- * @returns A counter that increments when theme changes
+ * Hook to trigger re-render when theme changes — kept for compatibility
  */
 export const useThemeChangeCounter = () => {
-  const [counter, setCounter] = useState(0);
-
-  useEffect(() => {
-    const handleThemeChange = () => {
-      setCounter((prev) => prev + 1);
-    };
-
-    // Listen for DOM attribute changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'data-theme'
-        ) {
-          handleThemeChange();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-
-    // Listen for custom theme change events
-    window.addEventListener(THEME_CHANGE_EVENT, handleThemeChange);
-
-    // Listen for localStorage changes (for multi-tab support)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'theme') {
-        handleThemeChange();
-      }
-    });
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener(THEME_CHANGE_EVENT, handleThemeChange);
-      window.removeEventListener('storage', handleThemeChange);
-    };
-  }, []);
-
+  const [counter] = useState(0);
   return counter;
 };
