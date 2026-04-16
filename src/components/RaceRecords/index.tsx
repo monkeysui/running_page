@@ -110,10 +110,10 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-[var(--color-hr-primary)] text-left opacity-60">
-            <th className="pb-2 pr-3 font-medium">日期</th>
-            <th className="pb-2 pr-3 font-medium">赛事</th>
-            <th className="pb-2 pr-3 font-medium">距离</th>
-            <th className="pb-2 font-medium">用时</th>
+            <th className="pb-2 pr-3 font-medium">Date</th>
+            <th className="pb-2 pr-3 font-medium">Event</th>
+            <th className="pb-2 pr-3 font-medium">Dist</th>
+            <th className="pb-2 font-medium">Time</th>
           </tr>
         </thead>
         <tbody>

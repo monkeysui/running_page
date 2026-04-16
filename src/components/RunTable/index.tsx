@@ -140,7 +140,7 @@ const RunTable = ({
             disabled={page === 0}
             className="px-2 py-1 disabled:opacity-30"
           >
-            ‹ 上一页
+            ‹ Prev
           </button>
           <span>
             {page + 1} / {totalPages}
@@ -150,7 +150,7 @@ const RunTable = ({
             disabled={page === totalPages - 1}
             className="px-2 py-1 disabled:opacity-30"
           >
-            下一页 ›
+            Next ›
           </button>
         </div>
       )}

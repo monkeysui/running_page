@@ -33,7 +33,7 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
       (r) => r.start_date_local.slice(0, 4) === year
     );
     const months = Array.from({ length: 12 }, (_, i) => ({
-      label: `${i + 1}月`,
+      label: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
       distance: 0,
     }));
     filtered.forEach((run) => {
