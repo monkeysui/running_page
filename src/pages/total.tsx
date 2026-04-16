@@ -41,14 +41,14 @@ const SummaryPage = () => {
     const totalHours = totalSeconds / 3600;
     const tier =
       distanceKm > 2000
-        ? '精英'
+        ? 'Elite'
         : distanceKm > 1000
-          ? '进阶'
+          ? 'Advanced'
           : distanceKm > 500
-            ? '稳定'
+            ? 'Consistent'
             : distanceKm > 100
-              ? '入门'
-              : '新手';
+              ? 'Starter'
+              : 'Rookie';
     return {
       totalDistance: distanceKm,
       totalActivities: acts.length,
@@ -78,13 +78,14 @@ const SummaryPage = () => {
             <span style={{ color: 'var(--color-brand)' }}>Pulse</span>
           </h1>
           <p className="text-muted mt-4 max-w-xl text-sm leading-relaxed">
-            按年 / 月 / 周 / 日维度拆解，追踪距离、配速、心率与训练量峰值，横跨{' '}
+            High-fidelity breakdown by year / month / week / day. Tracking
+            distance, pace, heart rate and volume peaks across{' '}
             <span
               style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
             >
               {seasonStats.yearsCount}
             </span>{' '}
-            年。
+            years.
           </p>
         </div>
       </section>
@@ -104,22 +105,22 @@ const SummaryPage = () => {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <FooterStat
             value={seasonStats.totalDistance.toFixed(1)}
-            label={`累计 ${DIST_UNIT}`}
+            label={`Total ${DIST_UNIT}`}
             accent
           />
           <FooterStat
             value={seasonStats.totalActivities.toString()}
-            label="累计活动"
+            label="Total Activities"
           />
           <FooterStat
             value={
               seasonStats.avgHr > 0 ? seasonStats.avgHr.toString() : '—'
             }
-            label="平均心率"
+            label="Avg Heart Rate"
           />
           <FooterStat
             value={seasonStats.tier}
-            label="运动等级"
+            label="Activity Tier"
             accentColor="var(--color-accent-purple)"
           />
         </div>
