@@ -63,7 +63,7 @@ interface ProgressCardProps {
 const ProgressCard = ({ title, current, goal, unit }: ProgressCardProps) => {
   const pct = Math.min((current / goal) * 100, 100);
   return (
-    <div className="bg-surface-card-low flex h-full flex-col justify-between gap-4 rounded-2xl p-6">
+    <div className="bg-surface-card flex h-full flex-col justify-between gap-4 rounded-2xl p-6 transition-transform hover:scale-[1.02]">
       <div className="flex items-end justify-between">
         <span className="font-headline text-sm font-bold">{title}</span>
         <span
@@ -359,7 +359,7 @@ const Index = () => {
         {/* Quick Stats card */}
         <div className="lg:col-span-4">
           <div
-            className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border p-6"
+            className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border p-6 transition-transform hover:scale-[1.02]"
             style={{
               backgroundColor: 'color-mix(in srgb, var(--color-accent-purple) 8%, var(--color-surface-container))',
               borderColor: 'color-mix(in srgb, var(--color-accent-purple) 15%, transparent)',
@@ -438,7 +438,7 @@ const Index = () => {
             </div>
           </div>
           <div className="xl:col-span-8">
-            <div className="bg-surface-card flex h-full flex-col overflow-hidden rounded-2xl p-6">
+            <div className="bg-surface-card flex h-full flex-col overflow-hidden rounded-2xl p-6 transition-transform hover:scale-[1.01]">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-headline text-xl font-bold">
                   Activity Intensity {year}
@@ -466,7 +466,7 @@ const Index = () => {
 
       {/* Row 3: monthly chart + race records */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="bg-surface-card rounded-2xl p-6 lg:col-span-2">
+        <div className="bg-surface-card rounded-2xl p-6 transition-transform hover:scale-[1.01] lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-headline text-xl font-bold">
               {year === 'Total' ? 'Yearly Distance' : 'Monthly Distance'}
@@ -477,14 +477,14 @@ const Index = () => {
           </div>
           <MonthlyChart year={year} />
         </div>
-        <div className="bg-surface-card rounded-2xl p-6">
+        <div className="bg-surface-card rounded-2xl p-6 transition-transform hover:scale-[1.02]">
           <RaceRecords locateActivity={locateActivity} />
         </div>
       </section>
 
       {/* Row 4: run logs table */}
       {year !== 'Total' && (
-        <section className="bg-surface-card rounded-2xl p-6">
+        <section className="bg-surface-card rounded-2xl p-6 transition-transform hover:scale-[1.005]">
           <h3 className="font-headline mb-4 text-xl font-bold">
             Latest Run Logs
           </h3>
