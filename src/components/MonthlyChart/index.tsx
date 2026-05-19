@@ -52,8 +52,8 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
   const maxDistance = Math.max(...data.map((d) => d.distance), 1);
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex h-56 items-end gap-2">
+    <div className="flex min-h-[200px] flex-1 flex-col">
+      <div className="flex flex-1 items-end gap-2">
         {data.map((d) => {
           const heightPct = (d.distance / maxDistance) * 100;
           return (
