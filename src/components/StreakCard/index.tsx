@@ -1,3 +1,4 @@
+import type React from 'react';
 import { StreakInfo } from '@/utils/stats';
 
 const IconFlame = (props: React.SVGProps<SVGSVGElement>) => (
@@ -27,7 +28,7 @@ const StreakCard = ({ info }: StreakCardProps) => {
           className="h-3.5 w-3.5"
           style={{ color: 'var(--color-accent-red)' }}
         />
-        <span className="text-muted text-[10px] font-semibold uppercase tracking-widest">
+        <span className="text-muted text-[10px] font-semibold tracking-widest uppercase">
           Streak
         </span>
       </div>
@@ -40,13 +41,13 @@ const StreakCard = ({ info }: StreakCardProps) => {
       </div>
 
       <div className="flex w-full items-end justify-between gap-1">
-        {recentDays.map((d, idx) => {
+        {recentDays.map((d) => {
           const dow = (d.date.getDay() + 6) % 7;
           const label = DOW_LABEL[dow];
           const dateLabel = d.date.getDate();
           return (
             <div
-              key={idx}
+              key={d.date.toISOString()}
               className="flex min-w-0 flex-1 flex-col items-center gap-1"
             >
               <span className="text-muted text-[9px] font-semibold uppercase">
@@ -62,9 +63,7 @@ const StreakCard = ({ info }: StreakCardProps) => {
                   backgroundColor: d.active
                     ? 'var(--color-accent-red)'
                     : 'var(--color-surface-variant)',
-                  border: d.isToday
-                    ? '1.5px solid var(--color-brand)'
-                    : 'none',
+                  border: d.isToday ? '1.5px solid var(--color-brand)' : 'none',
                 }}
               >
                 {dateLabel}

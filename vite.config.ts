@@ -1,17 +1,9 @@
 import process from 'node:process';
+import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import viteTsconfigPaths from 'vite-tsconfig-paths';
 import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
-
-// The following are known larger packages or packages that can be loaded asynchronously.
-const individuallyPackages = [
-  'activities',
-  'github.svg',
-  'grid.svg',
-  'mol.svg',
-];
 
 const colorClassMapping: { [key: string]: string } = {
   // Background
@@ -30,7 +22,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    viteTsconfigPaths(),
     svgr({
       include: ['**/*.svg'],
       svgrOptions: {
@@ -90,27 +81,15 @@ export default defineConfig({
   define: {
     'import.meta.env.VERCEL': JSON.stringify(process.env.VERCEL),
   },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@assets': fileURLToPath(new URL('./assets', import.meta.url)),
+    },
+  },
   build: {
     manifest: true,
+    modulePreload: false,
     outDir: './dist', // for user easy to use, vercel use default dir -> dist
-    rollupOptions: {
-      output: {
-        manualChunks: (id: string) => {
-          if (id.includes('node_modules')) {
-            return 'vendors';
-            // If there will be more and more external packages referenced in the future,
-            // the following approach can be considered.
-            // const name = id.split('node_modules/')[1].split('/');
-            // return name[0] == '.pnpm' ? name[1] : name[0];
-          } else {
-            for (const item of individuallyPackages) {
-              if (id.includes(item)) {
-                return item;
-              }
-            }
-          }
-        },
-      },
-    },
   },
 });

@@ -71,7 +71,7 @@ const SummaryPage = () => {
       <section className="mb-2 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
           <h1
-            className="font-headline text-5xl font-extrabold uppercase italic leading-none tracking-tighter md:text-7xl"
+            className="font-headline text-5xl leading-none font-extrabold tracking-tighter uppercase italic md:text-7xl"
             style={{ letterSpacing: '-0.04em' }}
           >
             Performance{' '}
@@ -113,9 +113,7 @@ const SummaryPage = () => {
             label="Total Activities"
           />
           <FooterStat
-            value={
-              seasonStats.avgHr > 0 ? seasonStats.avgHr.toString() : '—'
-            }
+            value={seasonStats.avgHr > 0 ? seasonStats.avgHr.toString() : '—'}
             label="Avg Heart Rate"
           />
           <FooterStat
@@ -151,7 +149,7 @@ const FooterStat = ({
     >
       {value}
     </h4>
-    <p className="text-muted mt-1 text-[10px] font-bold uppercase tracking-[0.18em]">
+    <p className="text-muted mt-1 text-[10px] font-bold tracking-[0.18em] uppercase">
       {label}
     </p>
   </div>

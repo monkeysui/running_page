@@ -36,7 +36,8 @@
   -webkit-appearance: none;
   padding: 10px 36px 10px 18px;
   border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 10%, transparent);
   background-color: var(--color-surface-container-high);
   color: var(--color-text-primary);
   cursor: pointer;
@@ -64,7 +65,8 @@
 /* ---- Stat Card (kinetic-noir inspired) ---- */
 .activityCard {
   background-color: var(--color-surface-container);
-  border: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   border-radius: 16px;
   width: 280px;
   box-sizing: border-box;
@@ -221,7 +223,11 @@
 }
 
 .chartEmpty {
-  background-color: color-mix(in srgb, var(--color-text-primary) 6%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-text-primary) 6%,
+    transparent
+  ) !important;
 }
 
 /* ---- Life view ---- */
@@ -242,7 +248,8 @@
   padding: 6px;
   background-color: var(--color-surface-container-low);
   border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 6%, transparent);
 }
 
 .yearButton {

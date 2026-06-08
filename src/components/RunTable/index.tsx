@@ -17,84 +17,105 @@ const PAGE_SIZE = 12;
 interface IRunTableProperties {
   runs: Activity[];
   locateActivity: (_runIds: RunIds) => void;
-  setActivity: (_runs: Activity[]) => void;
+  setActivity?: (_runs: Activity[]) => void;
   runIndex: number;
   setRunIndex: (_index: number) => void;
 }
 
 type SortFunc = (_a: Activity, _b: Activity) => number;
+type SortDirection = 'ascending' | 'descending';
+
+interface SortState {
+  direction: SortDirection;
+  key: string;
+}
 
 const RunTable = ({
   runs,
   locateActivity,
-  setActivity,
   runIndex,
   setRunIndex,
 }: IRunTableProperties) => {
-  const [sortFuncInfo, setSortFuncInfo] = useState('');
+  const [sortState, setSortState] = useState<SortState | null>(null);
   const [page, setPage] = useState(0);
 
-  const totalPages = Math.ceil(runs.length / PAGE_SIZE);
+  const sortKeys = useMemo(() => {
+    const keys = [DIST_UNIT, 'Elev', 'Pace', 'BPM', 'Time', 'Date'];
+    return SHOW_ELEVATION_GAIN ? keys : keys.filter((key) => key !== 'Elev');
+  }, []);
 
-  // Memoize sort functions to prevent recreating them on every render
-  const sortFunctions = useMemo(() => {
-    const sortKMFunc: SortFunc = (a, b) =>
-      sortFuncInfo === DIST_UNIT
-        ? a.distance - b.distance
-        : b.distance - a.distance;
-    const sortElevationGainFunc: SortFunc = (a, b) =>
-      sortFuncInfo === 'Elev'
-        ? (a.elevation_gain ?? 0) - (b.elevation_gain ?? 0)
-        : (b.elevation_gain ?? 0) - (a.elevation_gain ?? 0);
-    const sortPaceFunc: SortFunc = (a, b) =>
-      sortFuncInfo === 'Pace'
-        ? a.average_speed - b.average_speed
-        : b.average_speed - a.average_speed;
-    const sortBPMFunc: SortFunc = (a, b) => {
-      return sortFuncInfo === 'BPM'
-        ? (a.average_heartrate ?? 0) - (b.average_heartrate ?? 0)
-        : (b.average_heartrate ?? 0) - (a.average_heartrate ?? 0);
-    };
-    const sortRunTimeFunc: SortFunc = (a, b) => {
-      const aTotalSeconds = convertMovingTime2Sec(a.moving_time);
-      const bTotalSeconds = convertMovingTime2Sec(b.moving_time);
-      return sortFuncInfo === 'Time'
-        ? aTotalSeconds - bTotalSeconds
-        : bTotalSeconds - aTotalSeconds;
-    };
-    const sortDateFuncClick =
-      sortFuncInfo === 'Date' ? sortDateFunc : sortDateFuncReverse;
+  const getSortFunction = useCallback(
+    (key: string, direction: SortDirection): SortFunc | undefined => {
+      const multiplier = direction === 'ascending' ? 1 : -1;
 
-    const sortFuncMap = new Map([
-      [DIST_UNIT, sortKMFunc],
-      ['Elev', sortElevationGainFunc],
-      ['Pace', sortPaceFunc],
-      ['BPM', sortBPMFunc],
-      ['Time', sortRunTimeFunc],
-      ['Date', sortDateFuncClick],
-    ]);
+      if (key === DIST_UNIT) {
+        return (a, b) => (a.distance - b.distance) * multiplier;
+      }
+      if (key === 'Elev') {
+        return (a, b) =>
+          ((a.elevation_gain ?? 0) - (b.elevation_gain ?? 0)) * multiplier;
+      }
+      if (key === 'Pace') {
+        return (a, b) => (a.average_speed - b.average_speed) * multiplier;
+      }
+      if (key === 'BPM') {
+        return (a, b) =>
+          ((a.average_heartrate ?? 0) - (b.average_heartrate ?? 0)) *
+          multiplier;
+      }
+      if (key === 'Time') {
+        return (a, b) =>
+          (convertMovingTime2Sec(a.moving_time) -
+            convertMovingTime2Sec(b.moving_time)) *
+          multiplier;
+      }
+      if (key === 'Date') {
+        return direction === 'ascending' ? sortDateFuncReverse : sortDateFunc;
+      }
 
-    if (!SHOW_ELEVATION_GAIN) {
-      sortFuncMap.delete('Elev');
-    }
-
-    return sortFuncMap;
-  }, [sortFuncInfo]);
-
-  const handleClick = useCallback<React.MouseEventHandler<HTMLElement>>(
-    (e) => {
-      const funcName = (e.target as HTMLElement).innerHTML;
-      const f = sortFunctions.get(funcName);
-
-      setRunIndex(-1);
-      setPage(0);
-      setSortFuncInfo(sortFuncInfo === funcName ? '' : funcName);
-      setActivity(runs.sort(f));
+      return undefined;
     },
-    [sortFunctions, sortFuncInfo, runs, setRunIndex, setActivity]
+    []
   );
 
-  const pagedRuns = runs.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const displayedRuns = useMemo(() => {
+    if (!sortState) return runs;
+
+    const sortFunction = getSortFunction(sortState.key, sortState.direction);
+    if (!sortFunction) return runs;
+
+    return runs.slice().sort(sortFunction);
+  }, [getSortFunction, runs, sortState]);
+
+  const runIndexById = useMemo(
+    () => new Map(runs.map((run, index) => [run.run_id, index])),
+    [runs]
+  );
+
+  const totalPages = Math.ceil(displayedRuns.length / PAGE_SIZE);
+
+  const handleClick = useCallback(
+    (key: string) => {
+      setRunIndex(-1);
+      setPage(0);
+      setSortState((currentState) => {
+        const initialDirection = key === 'Date' ? 'ascending' : 'descending';
+        const nextDirection =
+          currentState?.key === key && currentState.direction === 'descending'
+            ? 'ascending'
+            : initialDirection;
+
+        return { key, direction: nextDirection };
+      });
+    },
+    [setRunIndex]
+  );
+
+  const safePage = totalPages > 0 ? Math.min(page, totalPages - 1) : 0;
+  const pagedRuns = displayedRuns.slice(
+    safePage * PAGE_SIZE,
+    (safePage + 1) * PAGE_SIZE
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -103,8 +124,15 @@ const RunTable = ({
           <thead>
             <tr>
               <th />
-              {Array.from(sortFunctions.keys()).map((k) => (
-                <th key={k} onClick={handleClick}>
+              {sortKeys.map((k) => (
+                <th
+                  key={k}
+                  aria-sort={
+                    sortState?.key === k ? sortState.direction : undefined
+                  }
+                  className={styles.sortableHeader}
+                  onClick={() => handleClick(k)}
+                >
                   {k}
                 </th>
               ))}
@@ -114,7 +142,10 @@ const RunTable = ({
             {pagedRuns.map((run, elementIndex) => (
               <RunRow
                 key={run.run_id}
-                elementIndex={page * PAGE_SIZE + elementIndex}
+                elementIndex={
+                  runIndexById.get(run.run_id) ??
+                  safePage * PAGE_SIZE + elementIndex
+                }
                 locateActivity={locateActivity}
                 run={run}
                 runIndex={runIndex}
@@ -125,7 +156,7 @@ const RunTable = ({
               Array.from({ length: PAGE_SIZE - pagedRuns.length }, (_, i) => (
                 <tr key={`empty-${i}`} className={`${styles.runRow} invisible`}>
                   <td>&nbsp;</td>
-                  {Array.from(sortFunctions.keys()).map((k) => (
+                  {sortKeys.map((k) => (
                     <td key={k}>&nbsp;</td>
                   ))}
                 </tr>
@@ -137,17 +168,17 @@ const RunTable = ({
         <div className="mt-auto flex items-center justify-center gap-3 pt-4 text-sm opacity-60">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
+            disabled={safePage === 0}
             className="px-2 py-1 disabled:opacity-30"
           >
             ‹ Prev
           </button>
           <span>
-            {page + 1} / {totalPages}
+            {safePage + 1} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page === totalPages - 1}
+            disabled={safePage === totalPages - 1}
             className="px-2 py-1 disabled:opacity-30"
           >
             Next ›

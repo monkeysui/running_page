@@ -179,9 +179,7 @@ const Index = () => {
           </h1>
           <p className="text-muted mt-2 text-sm">{infoMessage}</p>
         </div>
-        <div
-          className="bg-surface-card-low flex flex-wrap items-center gap-1 overflow-hidden rounded-3xl border border-white/5 p-1"
-        >
+        <div className="bg-surface-card-low flex flex-wrap items-center gap-1 overflow-hidden rounded-3xl border border-white/5 p-1">
           {yearsWithTotal.map((y) => (
             <button
               key={y}
@@ -193,7 +191,10 @@ const Index = () => {
               }`}
               style={
                 y === year
-                  ? { backgroundColor: 'var(--color-surface-variant)', fontWeight: 700 }
+                  ? {
+                      backgroundColor: 'var(--color-surface-variant)',
+                      fontWeight: 700,
+                    }
                   : undefined
               }
             >
@@ -265,7 +266,7 @@ const Index = () => {
               <h3 className="font-headline text-xl font-bold">
                 Monthly Distance
               </h3>
-              <span className="text-muted font-headline text-xs font-bold uppercase tracking-widest">
+              <span className="text-muted font-headline text-xs font-bold tracking-widest uppercase">
                 {year}
               </span>
             </div>

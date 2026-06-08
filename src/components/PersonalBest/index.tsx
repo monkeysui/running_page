@@ -1,3 +1,4 @@
+import type React from 'react';
 import { PersonalBests, formatHms } from '@/utils/stats';
 
 const IconTrophy = (props: React.SVGProps<SVGSVGElement>) => (

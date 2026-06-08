@@ -35,8 +35,18 @@ const legendShade = (type: ActiveType, level: number) =>
   `color-mix(in srgb, ${TYPE_BASE[type]} ${SHADE_PCT[level - 1]}%, var(--color-surface-variant))`;
 
 const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 const DOW_LABEL = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 
@@ -123,9 +133,7 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
         date: key,
         x: col,
         y: row,
-        color: hit
-          ? shadeFor(hit.type as ActiveType, distanceKm)
-          : EMPTY_COLOR,
+        color: hit ? shadeFor(hit.type as ActiveType, distanceKm) : EMPTY_COLOR,
         type: hit?.type ?? null,
         distanceKm,
       });

@@ -55,7 +55,9 @@ const inRange = (
 ): Activity[] =>
   runs.filter((r) => {
     const d = parseLocalDate(r.start_date_local);
-    return d.getTime() >= start.getTime() && d.getTime() < endExclusive.getTime();
+    return (
+      d.getTime() >= start.getTime() && d.getTime() < endExclusive.getTime()
+    );
   });
 
 export interface PeriodComparison {
@@ -76,8 +78,8 @@ export const computePeriodStats = (
   let curEnd: Date;
   let prevStart: Date;
   let prevEnd: Date;
-  let periodLabel = '';
-  let previousLabel = '';
+  let periodLabel: string;
+  let previousLabel: string;
 
   if (period === 'year') {
     curStart = new Date(now.getFullYear(), 0, 1);
@@ -221,10 +223,8 @@ export const computePersonalBests = (runs: Activity[]): PersonalBests => {
   let half: number | null = null;
   let full: number | null = null;
 
-  const updateBest = (
-    cur: number | null,
-    value: number
-  ): number | null => (cur === null || value < cur ? value : cur);
+  const updateBest = (cur: number | null, value: number): number | null =>
+    cur === null || value < cur ? value : cur;
 
   for (const r of runs) {
     if (r.type !== 'Run') continue;

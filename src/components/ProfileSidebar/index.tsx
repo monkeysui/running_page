@@ -1,17 +1,34 @@
+import type React from 'react';
 import { Activity, M_TO_DIST, DIST_UNIT } from '@/utils/utils';
 import { formatHoursShort } from '@/utils/stats';
 import { convertMovingTime2Sec } from '@/utils/utils';
 import { useMemo } from 'react';
 
 const IconRoute = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
     <circle cx="6" cy="19" r="2" />
     <circle cx="18" cy="5" r="2" />
     <path d="M12 19h4.5a3.5 3.5 0 000-7h-8a3.5 3.5 0 010-7H12" />
   </svg>
 );
 const IconPin = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
     <path d="M12 22s7-7.5 7-13a7 7 0 10-14 0c0 5.5 7 13 7 13z" />
     <circle cx="12" cy="9" r="2.5" />
   </svg>
@@ -58,9 +75,7 @@ const ProfileSidebar = ({
         { month: 'short', day: 'numeric' }
       )
     : '';
-  const latestDistance = latest
-    ? (latest.distance / M_TO_DIST).toFixed(1)
-    : '';
+  const latestDistance = latest ? (latest.distance / M_TO_DIST).toFixed(1) : '';
 
   return (
     <div className="bg-surface-card flex h-full flex-col justify-between gap-3 rounded-2xl p-5 transition-transform hover:scale-[1.02]">
@@ -85,26 +100,26 @@ const ProfileSidebar = ({
 
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
-          <span className="font-headline text-sm font-bold leading-tight">
+          <span className="font-headline text-sm leading-tight font-bold">
             {stats.count.toLocaleString()}
           </span>
-          <span className="text-muted text-[9px] uppercase tracking-wider">
+          <span className="text-muted text-[9px] tracking-wider uppercase">
             activities
           </span>
         </div>
         <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
-          <span className="font-headline text-sm font-bold leading-tight">
+          <span className="font-headline text-sm leading-tight font-bold">
             {years.length}
           </span>
-          <span className="text-muted text-[9px] uppercase tracking-wider">
+          <span className="text-muted text-[9px] tracking-wider uppercase">
             years
           </span>
         </div>
         <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
-          <span className="font-headline text-sm font-bold leading-tight">
+          <span className="font-headline text-sm leading-tight font-bold">
             {formatHoursShort(stats.totalSeconds)}
           </span>
-          <span className="text-muted text-[9px] uppercase tracking-wider">
+          <span className="text-muted text-[9px] tracking-wider uppercase">
             time
           </span>
         </div>

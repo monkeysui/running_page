@@ -33,7 +33,20 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
       (r) => r.start_date_local.slice(0, 4) === year
     );
     const months = Array.from({ length: 12 }, (_, i) => ({
-      label: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
+      label: [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ][i],
       distance: 0,
     }));
     filtered.forEach((run) => {
@@ -77,7 +90,7 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
                       : 'var(--color-surface-variant)',
                 }}
               />
-              <span className="text-muted mt-2 text-[10px] font-bold uppercase tracking-wider">
+              <span className="text-muted mt-2 text-[10px] font-bold tracking-wider uppercase">
                 {d.label}
               </span>
             </div>

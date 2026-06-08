@@ -110,9 +110,9 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-[var(--color-hr-primary)] text-left opacity-60">
-            <th className="pb-2 pr-3 font-medium">Date</th>
-            <th className="pb-2 pr-3 font-medium">Event</th>
-            <th className="pb-2 pr-3 font-medium">Dist</th>
+            <th className="pr-3 pb-2 font-medium">Date</th>
+            <th className="pr-3 pb-2 font-medium">Event</th>
+            <th className="pr-3 pb-2 font-medium">Dist</th>
             <th className="pb-2 font-medium">Time</th>
           </tr>
         </thead>
@@ -120,10 +120,10 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
           {pagedRaces.map((race) => (
             <tr
               key={race.runId}
-              className="cursor-pointer border-b border-[var(--color-hr-primary)] border-opacity-30 transition-opacity hover:opacity-70"
+              className="border-opacity-30 cursor-pointer border-b border-[var(--color-hr-primary)] transition-opacity hover:opacity-70"
               onClick={() => locateActivity([race.runId])}
             >
-              <td className="whitespace-nowrap py-2 pr-3">{race.date}</td>
+              <td className="py-2 pr-3 whitespace-nowrap">{race.date}</td>
               <td className="py-2 pr-3 font-medium">
                 {race.blogUrl ? (
                   <a
@@ -139,8 +139,8 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
                   race.name
                 )}
               </td>
-              <td className="whitespace-nowrap py-2 pr-3">{race.distance}</td>
-              <td className="whitespace-nowrap py-2">{race.time}</td>
+              <td className="py-2 pr-3 whitespace-nowrap">{race.distance}</td>
+              <td className="py-2 whitespace-nowrap">{race.time}</td>
             </tr>
           ))}
         </tbody>

@@ -25,7 +25,8 @@ const Header = () => {
     <header
       className="fixed top-0 z-50 w-full border-b border-white/5 backdrop-blur-xl"
       style={{
-        backgroundColor: 'color-mix(in srgb, var(--color-background) 80%, transparent)',
+        backgroundColor:
+          'color-mix(in srgb, var(--color-background) 80%, transparent)',
         boxShadow: '0 0 30px rgba(142, 255, 113, 0.06)',
       }}
     >
@@ -39,16 +40,16 @@ const Header = () => {
         </Link>
 
         <div className="hidden items-center gap-2 md:flex">
-          {displayNavLinks.map((n, i) => {
+          {displayNavLinks.map((n) => {
             const isExternal = /^https?:\/\//.test(n.url);
             const className =
               'rounded-full px-4 py-1.5 text-sm font-medium text-[var(--color-on-surface-variant)] transition-colors hover:text-[var(--color-text-primary)]';
             return isExternal ? (
-              <a key={i} href={n.url} className={className}>
+              <a key={n.url} href={n.url} className={className}>
                 {n.name}
               </a>
             ) : (
-              <Link key={i} to={n.url} className={className}>
+              <Link key={n.url} to={n.url} className={className}>
                 {n.name}
               </Link>
             );
@@ -58,8 +59,7 @@ const Header = () => {
         <div
           className="hidden max-w-md text-right text-xs leading-relaxed opacity-60 lg:block"
           style={{
-            fontFamily:
-              "'LXGW WenKai', 'Playfair Display', Georgia, serif",
+            fontFamily: "'LXGW WenKai', 'Playfair Display', Georgia, serif",
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
