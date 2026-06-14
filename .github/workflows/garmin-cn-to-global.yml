@@ -9,8 +9,8 @@ on:
         default: true
         type: boolean
   schedule:
-    # 06:30 Asia/Shanghai. Existing Strava page sync runs at 08:00.
-    - cron: '30 22 * * *'
+    # Mondays 06:30 Asia/Shanghai. Existing Strava page sync runs at 08:00.
+    - cron: '30 22 * * 0'
 
 permissions:
   contents: read
