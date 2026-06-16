@@ -119,7 +119,7 @@ interface DisplaySummary {
 
 interface ChartData {
   day: number;
-  distance: string;
+  distance: number;
 }
 
 interface ActivityCardProps {
@@ -616,7 +616,7 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
     if (!showChart) return [];
     return generateLabels(interval, period).map((day) => ({
       day,
-      distance: (dailyDistances[day - 1] || 0).toFixed(2),
+      distance: Number((dailyDistances[day - 1] || 0).toFixed(2)),
     }));
   }, [dailyDistances, interval, period, showChart]);
 
@@ -624,9 +624,8 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
     if (!showChart) {
       return { yAxisMax: 0, yAxisTicks: [] };
     }
-    const max = Math.ceil(
-      Math.max(...data.map((d) => parseFloat(d.distance))) + 10
-    );
+    const maxDistance = Math.max(...data.map((d) => d.distance));
+    const max = Math.max(5, Math.ceil(maxDistance * 1.2));
     return {
       yAxisMax: max,
       yAxisTicks: Array.from(
@@ -981,6 +980,7 @@ const ActivityList: React.FC = () => {
               position: 'absolute',
               visibility: 'hidden',
               pointerEvents: 'none',
+              width: ITEM_WIDTH,
               height: 'auto',
             }}
             ref={setSampleCardRef}

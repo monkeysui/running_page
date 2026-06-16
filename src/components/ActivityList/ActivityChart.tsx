@@ -11,7 +11,7 @@ import { DIST_UNIT } from '@/utils/utils';
 
 interface ChartData {
   day: number;
-  distance: string;
+  distance: number;
 }
 
 interface ActivityChartProps {
@@ -22,7 +22,7 @@ interface ActivityChartProps {
 
 const ActivityChart = ({ data, yAxisMax, yAxisTicks }: ActivityChartProps) => (
   <ResponsiveContainer>
-    <BarChart data={data} margin={{ top: 20, right: 20, left: -20, bottom: 5 }}>
+    <BarChart data={data} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
       <CartesianGrid
         strokeDasharray="3 3"
         stroke="var(--color-run-row-hover-background)"
@@ -48,7 +48,7 @@ const ActivityChart = ({ data, yAxisMax, yAxisTicks }: ActivityChartProps) => (
         }}
         labelStyle={{ color: 'var(--color-primary)' }}
       />
-      <Bar dataKey="distance" fill="var(--color-primary)" />
+      <Bar dataKey="distance" fill="var(--color-primary)" minPointSize={2} />
     </BarChart>
   </ResponsiveContainer>
 );
