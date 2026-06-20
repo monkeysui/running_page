@@ -87,19 +87,23 @@ async def _get_candidate_ids(client, latest_count):
 
 
 async def _download_bridge_candidates(
-    secret_string_cn,
-    secret_string_global,
+    source_secret_string,
+    target_secret_string,
+    source_domain,
+    target_domain,
+    source_label,
+    target_label,
     downloaded_activity,
     is_only_running,
     latest_count,
-    global_compare_count,
+    target_compare_count,
     bridge_only,
 ):
-    cn_client = Garmin(secret_string_cn, "CN", is_only_running)
-    global_client = Garmin(secret_string_global, "COM", is_only_running)
+    source_client = Garmin(source_secret_string, source_domain, is_only_running)
+    target_client = Garmin(target_secret_string, target_domain, is_only_running)
 
-    cn_ids = await _get_candidate_ids(cn_client, latest_count)
-    to_check_ids = [activity_id for activity_id in cn_ids if activity_id]
+    source_ids = await _get_candidate_ids(source_client, latest_count)
+    to_check_ids = [activity_id for activity_id in source_ids if activity_id]
     to_check_ids = list(dict.fromkeys(to_check_ids))
     if downloaded_activity:
         to_check_ids = [
@@ -108,41 +112,47 @@ async def _download_bridge_candidates(
             if activity_id not in set(downloaded_activity)
         ]
 
-    print(f"{len(to_check_ids)} Garmin CN activities to compare")
+    print(f"{len(to_check_ids)} Garmin {source_label} activities to compare")
 
-    global_activities = await global_client.get_activities(0, global_compare_count)
+    target_activities = await target_client.get_activities(0, target_compare_count)
     new_ids = []
     id2title = {}
 
     for activity_id in to_check_ids:
         try:
-            cn_summary = await cn_client.get_activity_summary(activity_id)
+            source_summary = await source_client.get_activity_summary(activity_id)
         except Exception as e:
-            print(f"Failed to get CN activity summary {activity_id}: {str(e)}")
+            print(
+                f"Failed to get Garmin {source_label} activity summary "
+                f"{activity_id}: {str(e)}"
+            )
             continue
 
-        if any(_is_same_activity(cn_summary, item) for item in global_activities):
-            print(f"Skip {activity_id}: already exists in Garmin Global")
+        if any(_is_same_activity(source_summary, item) for item in target_activities):
+            print(f"Skip {activity_id}: already exists in Garmin {target_label}")
             if bridge_only:
                 marker_path = os.path.join(FIT_FOLDER, f"{activity_id}.synced")
                 with open(marker_path, "a", encoding="utf-8"):
                     pass
             continue
 
-        activity_title = cn_summary.get("activityName", "")
+        activity_title = source_summary.get("activityName", "")
         id2title[activity_id] = activity_title
         new_ids.append(activity_id)
 
-    print(f"{len(new_ids)} new Garmin CN activities to bridge")
+    print(
+        f"{len(new_ids)} new Garmin {source_label} activities to bridge "
+        f"to Garmin {target_label}"
+    )
     await asyncio.gather(
         *[
-            download_garmin_data(cn_client, activity_id, file_type="fit")
+            download_garmin_data(source_client, activity_id, file_type="fit")
             for activity_id in new_ids
         ]
     )
 
-    await cn_client.req.aclose()
-    await global_client.req.aclose()
+    await source_client.req.aclose()
+    await target_client.req.aclose()
     return new_ids, id2title
 
 
@@ -169,36 +179,56 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--global-compare-count",
-        dest="global_compare_count",
+        "--target-compare-count",
+        dest="target_compare_count",
         type=int,
         default=200,
-        help="number of recent Garmin Global activities used for duplicate checks",
+        help="number of recent target activities used for duplicate checks",
     )
     parser.add_argument(
         "--skip-existing-global",
-        dest="skip_existing_global",
+        "--skip-existing-target",
+        dest="skip_existing_target",
         action="store_true",
-        help="skip CN activities that already look present in Garmin Global",
+        help="skip source activities that already look present in the target account",
     )
     parser.add_argument(
         "--bridge-only",
         dest="bridge_only",
         action="store_true",
-        help="only bridge Garmin CN to Global; do not regenerate local page data",
+        help="only bridge Garmin accounts; do not regenerate local page data",
+    )
+    parser.add_argument(
+        "--global-to-cn",
+        dest="global_to_cn",
+        action="store_true",
+        help="bridge Garmin Global activities to Garmin CN instead of CN to Global",
     )
 
     options = parser.parse_args()
     secret_string_cn = options.cn_secret_string
     secret_string_global = options.global_secret_string
-    auth_domain = "CN"
     is_only_running = options.only_run
     if secret_string_cn is None or secret_string_global is None:
         print("Missing argument nor valid configuration file")
         sys.exit(1)
 
-    # Step 1:
-    # Sync all activities from Garmin CN to Garmin Global in FIT format
-    # If the activity is manually imported with a GPX, the GPX file will be synced
+    if options.global_to_cn:
+        source_secret_string = secret_string_global
+        target_secret_string = secret_string_cn
+        source_domain = "COM"
+        target_domain = "CN"
+        source_label = "Global"
+        target_label = "CN"
+    else:
+        source_secret_string = secret_string_cn
+        target_secret_string = secret_string_global
+        source_domain = "CN"
+        target_domain = "COM"
+        source_label = "CN"
+        target_label = "Global"
+
+    print(f"Bridge direction: Garmin {source_label} -> Garmin {target_label}")
 
     # load synced activity list
     downloaded_fit = get_downloaded_ids(FIT_FOLDER)
@@ -210,16 +240,20 @@ if __name__ == "__main__":
     if not os.path.exists(folder):
         os.mkdir(folder)
 
-    if options.skip_existing_global or options.latest_count:
+    if options.skip_existing_target or options.latest_count:
         loop = asyncio.get_event_loop()
         future = asyncio.ensure_future(
             _download_bridge_candidates(
-                secret_string_cn,
-                secret_string_global,
+                source_secret_string,
+                target_secret_string,
+                source_domain,
+                target_domain,
+                source_label,
+                target_label,
                 downloaded_activity,
                 is_only_running,
                 options.latest_count,
-                options.global_compare_count,
+                options.target_compare_count,
                 options.bridge_only,
             )
         )
@@ -229,8 +263,8 @@ if __name__ == "__main__":
         loop = asyncio.get_event_loop()
         future = asyncio.ensure_future(
             download_new_activities(
-                secret_string_cn,
-                auth_domain,
+                source_secret_string,
+                source_domain,
                 downloaded_activity,
                 is_only_running,
                 folder,
@@ -250,15 +284,14 @@ if __name__ == "__main__":
             to_upload_files.append(os.path.join(GPX_FOLDER, f"{i}.gpx"))
 
     print("Files to sync:" + " ".join(to_upload_files))
-    # FIXME is com ok here?
-    garmin_global_client = Garmin(
-        secret_string_global,
-        "COM",
+    target_client = Garmin(
+        target_secret_string,
+        target_domain,
         is_only_running,
     )
     loop = asyncio.get_event_loop()
     future = asyncio.ensure_future(
-        garmin_global_client.upload_activities_files(to_upload_files)
+        target_client.upload_activities_files(to_upload_files)
     )
     loop.run_until_complete(future)
 

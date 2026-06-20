@@ -1,4 +1,4 @@
-name: Garmin CN to Global Bridge
+name: Garmin Global to CN Bridge
 
 on:
   workflow_dispatch:
@@ -16,17 +16,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: garmin-cn-to-global-bridge
+  group: garmin-global-to-cn-bridge
   cancel-in-progress: false
 
 env:
   GARMIN_BRIDGE_LATEST_COUNT: 50
-  GARMIN_GLOBAL_COMPARE_COUNT: 200
+  GARMIN_TARGET_COMPARE_COUNT: 200
   USE_CLOUDFLARE_WARP: false
 
 jobs:
   bridge:
-    name: Bridge Garmin CN to Garmin Global
+    name: Bridge Garmin Global to Garmin CN
     runs-on: ubuntu-latest
 
     steps:
@@ -69,12 +69,12 @@ jobs:
           path: |
             FIT_OUT
             GPX_OUT
-          key: garmin-cn-to-global-${{ github.ref_name }}-${{ github.run_id }}
+          key: garmin-global-to-cn-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
-            garmin-cn-to-global-${{ github.ref_name }}-
-            garmin-cn-to-global-
+            garmin-global-to-cn-${{ github.ref_name }}-
+            garmin-global-to-cn-
 
-      - name: Bridge new Garmin CN activities to Garmin Global
+      - name: Bridge new Garmin Global activities to Garmin CN
         env:
           GARMIN_SECRET_STRING_CN: ${{ secrets.GARMIN_SECRET_STRING_CN }}
           GARMIN_SECRET_STRING: ${{ secrets.GARMIN_SECRET_STRING }}
@@ -96,10 +96,11 @@ jobs:
             "$GARMIN_SECRET_STRING_CN" \
             "$GARMIN_SECRET_STRING" \
             $only_run_arg \
+            --global-to-cn \
             --bridge-only \
-            --skip-existing-global \
+            --skip-existing-target \
             --latest-count "$GARMIN_BRIDGE_LATEST_COUNT" \
-            --global-compare-count "$GARMIN_GLOBAL_COMPARE_COUNT"
+            --target-compare-count "$GARMIN_TARGET_COMPARE_COUNT"
 
       - name: Disconnect Cloudflare WARP
         if: always() && env.USE_CLOUDFLARE_WARP == 'true'
