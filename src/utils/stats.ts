@@ -231,6 +231,8 @@ export const computePersonalBests = (runs: Activity[]): PersonalBests => {
     const distKm = (r.distance || 0) / 1000;
     const seconds = convertMovingTime2Sec(r.moving_time);
     if (!seconds || !distKm) continue;
+    // Reject corrupt source records beyond any credible human running speed.
+    if (r.distance / seconds > 8.33) continue;
 
     // Scaled time for shorter benchmark distances (extrapolate at average pace).
     if (distKm >= 5) {

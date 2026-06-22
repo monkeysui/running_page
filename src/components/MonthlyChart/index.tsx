@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 import useActivities from '@/hooks/useActivities';
 import { M_TO_DIST } from '@/utils/utils';
+import {
+  ACTIVITY_TYPE_COLORS,
+  DASHBOARD_ACTIVITY_TYPES,
+  normalizeDashboardActivityType,
+} from '@/utils/activityTypes';
 
 interface IMonthlyChartProps {
   year: string;
@@ -9,59 +14,57 @@ interface IMonthlyChartProps {
 const MonthlyChart = ({ year }: IMonthlyChartProps) => {
   const { activities, years } = useActivities();
 
-  // Yearly data for Total view
-  const yearlyData = useMemo(() => {
-    if (year !== 'Total') return [];
-    return years.map((y) => {
-      let distance = 0;
-      activities.forEach((run) => {
-        if (run.start_date_local.slice(0, 4) === y) {
-          distance += run.distance;
-        }
-      });
-      return {
-        label: y,
-        distance: parseFloat((distance / M_TO_DIST).toFixed(1)),
-      };
-    });
-  }, [activities, years, year]);
-
-  // Monthly data for single year view
-  const monthlyData = useMemo(() => {
-    if (year === 'Total') return [];
-    const filtered = activities.filter(
-      (r) => r.start_date_local.slice(0, 4) === year
-    );
-    const months = Array.from({ length: 12 }, (_, i) => ({
-      label: [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ][i],
+  const data = useMemo(() => {
+    const labels =
+      year === 'Total'
+        ? years
+        : [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
+    const rows = labels.map((label) => ({
+      label,
+      Run: 0,
+      Ride: 0,
+      Hike: 0,
       distance: 0,
     }));
-    filtered.forEach((run) => {
-      const m = parseInt(run.start_date_local.slice(5, 7), 10);
-      if (m >= 1 && m <= 12) {
-        months[m - 1].distance += run.distance;
-      }
-    });
-    months.forEach((m) => {
-      m.distance = parseFloat((m.distance / M_TO_DIST).toFixed(1));
-    });
-    return months;
-  }, [activities, year]);
 
-  const data = year === 'Total' ? yearlyData : monthlyData;
+    activities.forEach((activity) => {
+      const type = normalizeDashboardActivityType(activity.type);
+      if (!type) return;
+      const activityYear = activity.start_date_local.slice(0, 4);
+      const index =
+        year === 'Total'
+          ? labels.indexOf(activityYear)
+          : activityYear === year
+            ? parseInt(activity.start_date_local.slice(5, 7), 10) - 1
+            : -1;
+      if (index < 0 || index >= rows.length) return;
+      const distance = activity.distance || 0;
+      rows[index][type] += distance;
+      rows[index].distance += distance;
+    });
+
+    return rows.map((row) => ({
+      ...row,
+      Run: row.Run / M_TO_DIST,
+      Ride: row.Ride / M_TO_DIST,
+      Hike: row.Hike / M_TO_DIST,
+      distance: row.distance / M_TO_DIST,
+    }));
+  }, [activities, year, years]);
+
   const maxDistance = Math.max(...data.map((d) => d.distance), 1);
 
   return (
@@ -81,15 +84,26 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
                 </span>
               )}
               <div
-                className="w-full rounded-t-md transition-all hover:opacity-100"
+                className="flex w-full flex-col-reverse overflow-hidden rounded-t-md transition-all hover:opacity-100"
                 style={{
                   height: d.distance > 0 ? `${Math.max(heightPct, 3)}%` : '2px',
-                  background:
-                    d.distance > 0
-                      ? 'linear-gradient(180deg, var(--color-brand), color-mix(in srgb, var(--color-brand) 30%, transparent))'
-                      : 'var(--color-surface-variant)',
+                  backgroundColor: 'var(--color-surface-variant)',
                 }}
-              />
+                title={DASHBOARD_ACTIVITY_TYPES.filter((type) => d[type] > 0)
+                  .map((type) => `${type}: ${d[type].toFixed(1)} km`)
+                  .join(' · ')}
+              >
+                {DASHBOARD_ACTIVITY_TYPES.map((type) => (
+                  <div
+                    key={type}
+                    style={{
+                      height:
+                        d.distance > 0 ? `${(d[type] / d.distance) * 100}%` : 0,
+                      backgroundColor: ACTIVITY_TYPE_COLORS[type],
+                    }}
+                  />
+                ))}
+              </div>
               <span className="text-muted mt-2 text-[10px] font-bold tracking-wider uppercase">
                 {d.label}
               </span>

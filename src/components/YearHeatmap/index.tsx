@@ -1,38 +1,36 @@
 import { useMemo } from 'react';
 import useActivities from '@/hooks/useActivities';
 import { M_TO_DIST } from '@/utils/utils';
+import {
+  ACTIVITY_TYPE_COLORS,
+  DASHBOARD_ACTIVITY_TYPES,
+  DashboardActivityType,
+  normalizeDashboardActivityType,
+} from '@/utils/activityTypes';
 
 interface IYearHeatmapProps {
   year: string;
 }
 
-type CellType = 'Run' | 'Ride' | 'Hike' | 'Other';
-type ActiveType = Exclude<CellType, 'Other'>;
-
-const TYPE_BASE: Record<ActiveType, string> = {
-  Run: '#ff9e3f',
-  Ride: '#5fb7e6',
-  Hike: '#6bcb77',
-};
 const EMPTY_COLOR = 'var(--color-surface-variant)';
 
 // Distance (km) thresholds for shade levels 2/3/4. Level 1 = any activity > 0.
-const THRESHOLDS: Record<ActiveType, [number, number, number]> = {
+const THRESHOLDS: Record<DashboardActivityType, [number, number, number]> = {
   Run: [3, 7, 12],
   Ride: [10, 25, 50],
   Hike: [4, 8, 15],
 };
 const SHADE_PCT = [28, 52, 76, 100];
 
-const shadeFor = (type: ActiveType, km: number): string => {
+const shadeFor = (type: DashboardActivityType, km: number): string => {
   const [t2, t3, t4] = THRESHOLDS[type];
   const level = km >= t4 ? 4 : km >= t3 ? 3 : km >= t2 ? 2 : 1;
   const pct = SHADE_PCT[level - 1];
-  return `color-mix(in srgb, ${TYPE_BASE[type]} ${pct}%, ${EMPTY_COLOR})`;
+  return `color-mix(in srgb, ${ACTIVITY_TYPE_COLORS[type]} ${pct}%, ${EMPTY_COLOR})`;
 };
 
-const legendShade = (type: ActiveType, level: number) =>
-  `color-mix(in srgb, ${TYPE_BASE[type]} ${SHADE_PCT[level - 1]}%, var(--color-surface-variant))`;
+const legendShade = (type: DashboardActivityType, level: number) =>
+  `color-mix(in srgb, ${ACTIVITY_TYPE_COLORS[type]} ${SHADE_PCT[level - 1]}%, var(--color-surface-variant))`;
 
 const MONTHS = [
   'Jan',
@@ -58,20 +56,16 @@ const TOP_PAD = 18;
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-const normalizeType = (t: string): CellType => {
-  if (t === 'Run') return 'Run';
-  if (t === 'Ride') return 'Ride';
-  if (t === 'Hike') return 'Hike';
-  return 'Other';
-};
-
 const YearHeatmap = ({ year }: IYearHeatmapProps) => {
   const { activities } = useActivities();
 
   const { cells, weekCount, totals } = useMemo(() => {
     const y = parseInt(year, 10);
     // Build a map of date -> dominant activity (by distance)
-    const dayMap = new Map<string, { type: CellType; distance: number }>();
+    const dayMap = new Map<
+      string,
+      { type: DashboardActivityType; distance: number }
+    >();
     let runMeters = 0;
     let rideMeters = 0;
     let hikeMeters = 0;
@@ -82,7 +76,7 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
     activities.forEach((r) => {
       if (r.start_date_local.slice(0, 4) !== year) return;
       const date = r.start_date_local.slice(0, 10);
-      const type = normalizeType(r.type);
+      const type = normalizeDashboardActivityType(r.type);
       const distance = r.distance || 0;
       if (type === 'Run') {
         runMeters += distance;
@@ -94,7 +88,7 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
         hikeMeters += distance;
         hikeCount += 1;
       }
-      if (type === 'Other') return;
+      if (!type) return;
       const cur = dayMap.get(date);
       if (!cur || distance > cur.distance) {
         dayMap.set(date, { type, distance });
@@ -107,7 +101,7 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
       x: number;
       y: number;
       color: string;
-      type: CellType | null;
+      type: DashboardActivityType | null;
       distanceKm: number;
     }
     const out: Cell[] = [];
@@ -133,7 +127,7 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
         date: key,
         x: col,
         y: row,
-        color: hit ? shadeFor(hit.type as ActiveType, distanceKm) : EMPTY_COLOR,
+        color: hit ? shadeFor(hit.type, distanceKm) : EMPTY_COLOR,
         type: hit?.type ?? null,
         distanceKm,
       });
@@ -228,7 +222,7 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
       </svg>
 
       <div className="text-muted mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px]">
-        {(['Run', 'Ride', 'Hike'] as ActiveType[]).map((t) => {
+        {DASHBOARD_ACTIVITY_TYPES.map((t) => {
           const totalsFor = {
             Run: { count: totals.runCount, km: totals.runKm },
             Ride: { count: totals.rideCount, km: totals.rideKm },
