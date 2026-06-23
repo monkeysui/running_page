@@ -34,7 +34,7 @@ const WEEKLY_GOAL = 25; // km
 
 const Index = () => {
   const { siteTitle, siteUrl } = useSiteMetadata();
-  const { activities, thisYear, years, countries, provinces } = useActivities();
+  const { activities, thisYear, years } = useActivities();
   const [year, setYear] = useState(thisYear);
   const [runIndex, setRunIndex] = useState(-1);
   const [currentFilter, setCurrentFilter] = useState<{
@@ -86,12 +86,12 @@ const Index = () => {
 
   const runs = useMemo(() => {
     return filterAndSortRuns(
-      activities,
+      runActivities,
       currentFilter.item,
       currentFilter.func,
       sortDateFunc
     );
-  }, [activities, currentFilter.item, currentFilter.func]);
+  }, [runActivities, currentFilter.item, currentFilter.func]);
 
   const changeYear = useCallback((y: string) => {
     setYear(y);
@@ -228,12 +228,7 @@ const Index = () => {
           <StreakCard info={streakInfo} />
         </div>
         <div className="lg:col-span-4">
-          <ProfileSidebar
-            activities={activities}
-            countries={countries}
-            provinces={provinces}
-            years={years}
-          />
+          <ProfileSidebar activities={activities} />
         </div>
       </section>
 

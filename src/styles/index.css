@@ -14,8 +14,8 @@
 :root {
   /* brand / accent */
   --color-brand: #8eff71;
-  --color-secondary: #a88bff;
-  --color-accent-purple: #a88bff;
+  --color-secondary: #ff7ad9;
+  --color-accent-magenta: #ff7ad9;
   --color-accent-red: #ff7351;
   --color-accent-yellow: #ffc857;
   --color-accent-cyan: #88f6ff;
@@ -39,7 +39,7 @@
   --color-on-surface-variant: #adaaaa;
   --svg-color-inactive-cell: #1f1f1f;
   --svg-color-active-cell: #8eff71;
-  --svg-special-color: #a88bff;
+  --svg-special-color: #ff7ad9;
   --svg-special-color2: #ff7351;
 
   /* fonts */

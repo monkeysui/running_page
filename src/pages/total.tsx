@@ -5,12 +5,7 @@ import ActivityList from '@/components/ActivityList';
 import activitiesData from '@/static/activities.json';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 import { useTheme } from '@/hooks/useTheme';
-import { M_TO_DIST, DIST_UNIT, Activity } from '@/utils/utils';
-
-const convertTimeToSeconds = (time: string): number => {
-  const [h, m, s] = time.split(':').map(Number);
-  return h * 3600 + m * 60 + s;
-};
+import type { Activity } from '@/utils/utils';
 
 const SummaryPage = () => {
   const { siteTitle, description } = useSiteMetadata();
@@ -20,43 +15,9 @@ const SummaryPage = () => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  const seasonStats = useMemo(() => {
+  const yearsCount = useMemo(() => {
     const acts = activitiesData as Activity[];
-    let totalDistance = 0;
-    let totalHr = 0;
-    let hrCount = 0;
-    let totalSeconds = 0;
-    const years = new Set<string>();
-    acts.forEach((a) => {
-      totalDistance += a.distance || 0;
-      if (a.average_heartrate) {
-        totalHr += a.average_heartrate;
-        hrCount++;
-      }
-      totalSeconds += convertTimeToSeconds(a.moving_time || '00:00:00');
-      years.add(a.start_date_local.slice(0, 4));
-    });
-    const distanceKm = totalDistance / M_TO_DIST;
-    const avgHr = hrCount > 0 ? Math.round(totalHr / hrCount) : 0;
-    const totalHours = totalSeconds / 3600;
-    const tier =
-      distanceKm > 2000
-        ? 'Elite'
-        : distanceKm > 1000
-          ? 'Advanced'
-          : distanceKm > 500
-            ? 'Consistent'
-            : distanceKm > 100
-              ? 'Starter'
-              : 'Rookie';
-    return {
-      totalDistance: distanceKm,
-      totalActivities: acts.length,
-      avgHr,
-      totalHours,
-      yearsCount: years.size,
-      tier,
-    };
+    return new Set(acts.map((a) => a.start_date_local.slice(0, 4))).size;
   }, []);
 
   return (
@@ -83,7 +44,7 @@ const SummaryPage = () => {
             <span
               style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
             >
-              {seasonStats.yearsCount}
+              {yearsCount}
             </span>{' '}
             years.
           </p>
@@ -92,67 +53,8 @@ const SummaryPage = () => {
 
       {/* Activity list (filters + virtualized cards) */}
       <ActivityList />
-
-      {/* Season footer stats */}
-      <section
-        className="mt-10 rounded-2xl border p-8"
-        style={{
-          backgroundColor: 'var(--color-surface-container-low)',
-          borderColor:
-            'color-mix(in srgb, var(--color-text-primary) 6%, transparent)',
-        }}
-      >
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <FooterStat
-            value={seasonStats.totalDistance.toFixed(1)}
-            label={`Total ${DIST_UNIT}`}
-            accent
-          />
-          <FooterStat
-            value={seasonStats.totalActivities.toString()}
-            label="Total Activities"
-          />
-          <FooterStat
-            value={seasonStats.avgHr > 0 ? seasonStats.avgHr.toString() : '—'}
-            label="Avg Heart Rate"
-          />
-          <FooterStat
-            value={seasonStats.tier}
-            label="Activity Tier"
-            accentColor="var(--color-accent-purple)"
-          />
-        </div>
-      </section>
     </Layout>
   );
 };
-
-const FooterStat = ({
-  value,
-  label,
-  accent,
-  accentColor,
-}: {
-  value: string;
-  label: string;
-  accent?: boolean;
-  accentColor?: string;
-}) => (
-  <div>
-    <h4
-      className="font-headline text-3xl font-extrabold tracking-tighter md:text-4xl"
-      style={{
-        color: accent
-          ? 'var(--color-brand)'
-          : accentColor || 'var(--color-text-primary)',
-      }}
-    >
-      {value}
-    </h4>
-    <p className="text-muted mt-1 text-[10px] font-bold tracking-[0.18em] uppercase">
-      {label}
-    </p>
-  </div>
-);
 
 export default SummaryPage;

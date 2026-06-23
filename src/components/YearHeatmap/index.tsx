@@ -19,6 +19,7 @@ const THRESHOLDS: Record<DashboardActivityType, [number, number, number]> = {
   Run: [3, 7, 12],
   Ride: [10, 25, 50],
   Hike: [4, 8, 15],
+  Swim: [0.5, 1.5, 3],
 };
 const SHADE_PCT = [28, 52, 76, 100];
 
@@ -69,9 +70,11 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
     let runMeters = 0;
     let rideMeters = 0;
     let hikeMeters = 0;
+    let swimMeters = 0;
     let runCount = 0;
     let rideCount = 0;
     let hikeCount = 0;
+    let swimCount = 0;
 
     activities.forEach((r) => {
       if (r.start_date_local.slice(0, 4) !== year) return;
@@ -87,6 +90,9 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
       } else if (type === 'Hike') {
         hikeMeters += distance;
         hikeCount += 1;
+      } else if (type === 'Swim') {
+        swimMeters += distance;
+        swimCount += 1;
       }
       if (!type) return;
       const cur = dayMap.get(date);
@@ -143,9 +149,11 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
         runKm: runMeters / M_TO_DIST,
         rideKm: rideMeters / M_TO_DIST,
         hikeKm: hikeMeters / M_TO_DIST,
+        swimKm: swimMeters / M_TO_DIST,
         runCount,
         rideCount,
         hikeCount,
+        swimCount,
       },
     };
   }, [activities, year]);
@@ -227,6 +235,7 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
             Run: { count: totals.runCount, km: totals.runKm },
             Ride: { count: totals.rideCount, km: totals.rideKm },
             Hike: { count: totals.hikeCount, km: totals.hikeKm },
+            Swim: { count: totals.swimCount, km: totals.swimKm },
           }[t];
           return (
             <div key={t} className="flex items-center gap-1.5">

@@ -37,6 +37,7 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
       Run: 0,
       Ride: 0,
       Hike: 0,
+      Swim: 0,
       distance: 0,
     }));
 
@@ -61,6 +62,7 @@ const MonthlyChart = ({ year }: IMonthlyChartProps) => {
       Run: row.Run / M_TO_DIST,
       Ride: row.Ride / M_TO_DIST,
       Hike: row.Hike / M_TO_DIST,
+      Swim: row.Swim / M_TO_DIST,
       distance: row.distance / M_TO_DIST,
     }));
   }, [activities, year, years]);

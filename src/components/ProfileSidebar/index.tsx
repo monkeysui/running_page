@@ -1,8 +1,14 @@
 import type React from 'react';
-import { Activity, M_TO_DIST, DIST_UNIT } from '@/utils/utils';
+import { Activity, M_TO_DIST, DIST_UNIT, locationForRun } from '@/utils/utils';
 import { formatHoursShort } from '@/utils/stats';
 import { convertMovingTime2Sec } from '@/utils/utils';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import {
+  ACTIVITY_TYPE_COLORS,
+  DASHBOARD_ACTIVITY_TYPES,
+  DashboardActivityType,
+  normalizeDashboardActivityType,
+} from '@/utils/activityTypes';
 
 const IconRoute = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -36,37 +42,56 @@ const IconPin = (props: React.SVGProps<SVGSVGElement>) => (
 
 interface ProfileSidebarProps {
   activities: Activity[];
-  countries: string[];
-  provinces: string[];
-  years: string[];
 }
 
-const ProfileSidebar = ({
-  activities,
-  countries,
-  provinces,
-  years,
-}: ProfileSidebarProps) => {
+type OverviewActivityType = 'All' | DashboardActivityType;
+
+const OVERVIEW_ACTIVITY_TYPES: OverviewActivityType[] = [
+  'All',
+  ...DASHBOARD_ACTIVITY_TYPES,
+];
+
+const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
+  const [activityType, setActivityType] = useState<OverviewActivityType>('All');
+
   const stats = useMemo(() => {
     let meters = 0;
     let seconds = 0;
-    activities.forEach((r) => {
+    const countries = new Set<string>();
+    const provinces = new Set<string>();
+    const years = new Set<string>();
+    const selectedActivities =
+      activityType === 'All'
+        ? activities
+        : activities.filter(
+            (activity) =>
+              normalizeDashboardActivityType(activity.type) === activityType
+          );
+
+    selectedActivities.forEach((r) => {
       meters += r.distance || 0;
       seconds += convertMovingTime2Sec(r.moving_time);
+      const location = locationForRun(r);
+      if (location.country) countries.add(location.country);
+      if (location.province) provinces.add(location.province);
+      years.add(r.start_date_local.slice(0, 4));
     });
 
     let latest: Activity | null = null;
-    activities.forEach((r) => {
+    selectedActivities.forEach((r) => {
       if (!latest || r.start_date_local > latest.start_date_local) latest = r;
     });
 
     return {
       distance: Math.round(meters / M_TO_DIST),
-      count: activities.length,
+      count: selectedActivities.length,
       totalSeconds: seconds,
       latest,
+      countryCount: countries.size,
+      provinceCount: provinces.size,
+      yearCount: years.size,
     };
-  }, [activities]);
+  }, [activities, activityType]);
 
   const latest = stats.latest as Activity | null;
   const latestDateLabel = latest
@@ -76,67 +101,111 @@ const ProfileSidebar = ({
       )
     : '';
   const latestDistance = latest ? (latest.distance / M_TO_DIST).toFixed(1) : '';
+  const accentColor =
+    activityType === 'All'
+      ? 'var(--color-secondary)'
+      : ACTIVITY_TYPE_COLORS[activityType];
 
   return (
-    <div className="bg-surface-card flex h-full flex-col justify-between gap-3 rounded-2xl p-5 transition-transform hover:scale-[1.02]">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-baseline gap-1.5">
-          <IconRoute
-            className="h-5 w-5 self-center"
-            style={{ color: 'var(--color-secondary)' }}
-          />
-          <span className="font-headline text-3xl font-extrabold tracking-tight">
-            {stats.distance.toLocaleString()}
-          </span>
-          <span className="text-muted text-xs">{DIST_UNIT}</span>
-        </div>
-        <div className="text-muted flex items-center gap-1 text-[11px]">
-          <IconPin className="h-3 w-3" />
-          <span>{countries.length}</span>
-          <span className="opacity-40">/</span>
-          <span>{provinces.length}</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
-          <span className="font-headline text-sm leading-tight font-bold">
-            {stats.count.toLocaleString()}
-          </span>
-          <span className="text-muted text-[9px] tracking-wider uppercase">
-            activities
-          </span>
-        </div>
-        <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
-          <span className="font-headline text-sm leading-tight font-bold">
-            {years.length}
-          </span>
-          <span className="text-muted text-[9px] tracking-wider uppercase">
-            years
-          </span>
-        </div>
-        <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
-          <span className="font-headline text-sm leading-tight font-bold">
-            {formatHoursShort(stats.totalSeconds)}
-          </span>
-          <span className="text-muted text-[9px] tracking-wider uppercase">
-            time
-          </span>
-        </div>
-      </div>
-
-      {latest && (
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-muted">Latest</span>
-          <span className="truncate">
-            <span className="font-medium">{latest.name || 'Run'}</span>
-            <span className="text-muted">
-              {' '}
-              · {latestDistance} {DIST_UNIT} · {latestDateLabel}
+    <div className="bg-surface-card flex h-full gap-3 rounded-2xl p-5 transition-transform hover:scale-[1.02]">
+      <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-baseline gap-1.5">
+            <IconRoute
+              className="h-5 w-5 shrink-0 self-center"
+              style={{ color: accentColor }}
+            />
+            <span className="font-headline text-3xl font-extrabold tracking-tight">
+              {stats.distance.toLocaleString()}
             </span>
-          </span>
+            <span className="text-muted text-xs">{DIST_UNIT}</span>
+          </div>
+          <div className="text-muted flex shrink-0 items-center gap-1 text-[11px]">
+            <IconPin className="h-3 w-3" />
+            <span>{stats.countryCount}</span>
+            <span className="opacity-40">/</span>
+            <span>{stats.provinceCount}</span>
+          </div>
         </div>
-      )}
+
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
+            <span className="font-headline text-sm leading-tight font-bold">
+              {stats.count.toLocaleString()}
+            </span>
+            <span className="text-muted text-[9px] tracking-wider uppercase">
+              activities
+            </span>
+          </div>
+          <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
+            <span className="font-headline text-sm leading-tight font-bold">
+              {stats.yearCount}
+            </span>
+            <span className="text-muted text-[9px] tracking-wider uppercase">
+              years
+            </span>
+          </div>
+          <div className="bg-surface-card-low flex flex-col items-center gap-0 rounded-lg py-1.5">
+            <span className="font-headline text-sm leading-tight font-bold">
+              {formatHoursShort(stats.totalSeconds)}
+            </span>
+            <span className="text-muted text-[9px] tracking-wider uppercase">
+              time
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 text-[11px]">
+          <span className="text-muted">Latest</span>
+          {latest ? (
+            <span className="truncate">
+              <span className="font-medium">
+                {latest.name ||
+                  normalizeDashboardActivityType(latest.type) ||
+                  latest.type}
+              </span>
+              <span className="text-muted">
+                {' '}
+                · {latestDistance} {DIST_UNIT} · {latestDateLabel}
+              </span>
+            </span>
+          ) : (
+            <span className="text-muted">No activities yet</span>
+          )}
+        </div>
+      </div>
+
+      <div className="flex w-14 shrink-0 flex-col justify-between gap-1 border-l border-white/5 pl-2">
+        {OVERVIEW_ACTIVITY_TYPES.map((type) => {
+          const selected = type === activityType;
+          const color =
+            type === 'All'
+              ? 'var(--color-secondary)'
+              : ACTIVITY_TYPE_COLORS[type];
+          return (
+            <button
+              key={type}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setActivityType(type)}
+              className="w-full flex-1 rounded-lg px-1 py-1 text-[10px] font-semibold transition-colors"
+              style={{
+                backgroundColor: selected
+                  ? `color-mix(in srgb, ${color} 18%, transparent)`
+                  : 'transparent',
+                color: selected ? color : 'var(--color-on-surface-variant)',
+                border: `1px solid ${
+                  selected
+                    ? `color-mix(in srgb, ${color} 50%, transparent)`
+                    : 'transparent'
+                }`,
+              }}
+            >
+              {type}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };

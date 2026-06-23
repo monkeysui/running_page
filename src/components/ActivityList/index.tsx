@@ -17,6 +17,11 @@ import { loadSvgComponent } from '@/utils/svgUtils';
 import { SHOW_ELEVATION_GAIN, HOME_PAGE_TITLE } from '@/utils/const';
 import { DIST_UNIT, M_TO_DIST } from '@/utils/utils';
 import type { Activity } from '@/utils/utils';
+import {
+  DASHBOARD_ACTIVITY_TYPES,
+  DashboardActivityType,
+  normalizeDashboardActivityType,
+} from '@/utils/activityTypes';
 import useActivities from '@/hooks/useActivities';
 // Layout constants (avoid magic numbers)
 const ITEM_WIDTH = 280;
@@ -97,6 +102,7 @@ interface ActivitySummary {
   totalElevationGain: number;
   count: number;
   dailyDistances: number[];
+  dailyDistancesByType: Record<DashboardActivityType, number[]>;
   maxDistance: number;
   maxSpeed: number;
   location: string;
@@ -120,13 +126,19 @@ interface DisplaySummary {
 interface ChartData {
   day: number;
   distance: number;
+  Run: number;
+  Ride: number;
+  Hike: number;
+  Swim: number;
 }
 
 interface ActivityCardProps {
   period: string;
   summary: DisplaySummary;
   dailyDistances: number[];
+  dailyDistancesByType: Record<DashboardActivityType, number[]>;
   interval: string;
+  sportType: string;
   activities?: Activity[]; // Add activities for day interval
 }
 
@@ -177,6 +189,10 @@ const getSportTypeOptions = (activityData: Activity[]) => {
     sportTypeSet.delete('Ride');
     sportTypeSet.add('cycling');
   }
+  if (sportTypeSet.has('Swim')) {
+    sportTypeSet.delete('Swim');
+  }
+  sportTypeSet.add('swimming');
   cache.sportTypeOptions = ['all', ...sportTypeSet];
   return cache.sportTypeOptions;
 };
@@ -244,6 +260,9 @@ const matchesSportType = (activity: Activity, sportTypeArg: string) => {
   if (sportTypeArg === 'cycling') {
     return activity.type === 'cycling' || activity.type === 'Ride';
   }
+  if (sportTypeArg === 'swimming') {
+    return activity.type === 'swimming' || activity.type === 'Swim';
+  }
   return activity.type === sportTypeArg;
 };
 
@@ -253,6 +272,7 @@ const createEmptyActivitySummary = (): ActivitySummary => ({
   totalElevationGain: 0,
   count: 0,
   dailyDistances: [],
+  dailyDistancesByType: { Run: [], Ride: [], Hike: [], Swim: [] },
   maxDistance: 0,
   maxSpeed: 0,
   location: '',
@@ -335,6 +355,11 @@ const groupActivitiesByInterval = (
       if (intervalArg === 'day') acc[key].activities.push(activity);
       acc[key].dailyDistances[index] =
         (acc[key].dailyDistances[index] || 0) + distance;
+      const dashboardType = normalizeDashboardActivityType(activity.type);
+      if (dashboardType) {
+        const distances = acc[key].dailyDistancesByType[dashboardType];
+        distances[index] = (distances[index] || 0) + distance;
+      }
       if (distance > acc[key].maxDistance) acc[key].maxDistance = distance;
       if (speed > acc[key].maxSpeed) acc[key].maxSpeed = speed;
       if (intervalArg === 'day')
@@ -601,7 +626,9 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
   period,
   summary,
   dailyDistances,
+  dailyDistancesByType,
   interval,
+  sportType,
   activities = [],
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -614,11 +641,20 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
 
   const data: ChartData[] = useMemo(() => {
     if (!showChart) return [];
-    return generateLabels(interval, period).map((day) => ({
-      day,
-      distance: Number((dailyDistances[day - 1] || 0).toFixed(2)),
-    }));
-  }, [dailyDistances, interval, period, showChart]);
+    return generateLabels(interval, period).map((day) => {
+      const index = day - 1;
+      return {
+        day,
+        distance: Number((dailyDistances[index] || 0).toFixed(2)),
+        Run: Number((dailyDistancesByType.Run[index] || 0).toFixed(2)),
+        Ride: Number((dailyDistancesByType.Ride[index] || 0).toFixed(2)),
+        Hike: Number((dailyDistancesByType.Hike[index] || 0).toFixed(2)),
+        Swim: Number((dailyDistancesByType.Swim[index] || 0).toFixed(2)),
+      };
+    });
+  }, [dailyDistances, dailyDistancesByType, interval, period, showChart]);
+
+  const activityType = normalizeDashboardActivityType(sportType);
 
   const { yAxisMax, yAxisTicks } = useMemo(() => {
     if (!showChart) {
@@ -702,6 +738,8 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
                     data={data}
                     yAxisMax={yAxisMax}
                     yAxisTicks={yAxisTicks}
+                    stackByType={sportType === 'all'}
+                    activityType={activityType}
                   />
                 </Suspense>
               </div>
@@ -731,6 +769,7 @@ const activityCardAreEqual = (
 ) => {
   if (prev.period !== next.period) return false;
   if (prev.interval !== next.interval) return false;
+  if (prev.sportType !== next.sportType) return false;
   const s1 = prev.summary;
   const s2 = next.summary;
   if (
@@ -751,6 +790,14 @@ const activityCardAreEqual = (
   const d2 = next.dailyDistances || [];
   if (d1.length !== d2.length) return false;
   for (let i = 0; i < d1.length; i++) if (d1[i] !== d2[i]) return false;
+  for (const type of DASHBOARD_ACTIVITY_TYPES) {
+    const typed1 = prev.dailyDistancesByType[type];
+    const typed2 = next.dailyDistancesByType[type];
+    if (typed1.length !== typed2.length) return false;
+    for (let i = 0; i < typed1.length; i++) {
+      if (typed1[i] !== typed2[i]) return false;
+    }
+  }
   const a1 = prev.activities || [];
   const a2 = next.activities || [];
   if (a1.length !== a2.length) return false;
@@ -991,7 +1038,9 @@ const ActivityList: React.FC = () => {
                 period={dataList[0].period}
                 summary={toDisplaySummary(dataList[0].summary)}
                 dailyDistances={dataList[0].summary.dailyDistances}
+                dailyDistancesByType={dataList[0].summary.dailyDistancesByType}
                 interval={interval}
+                sportType={sportType}
                 activities={
                   interval === 'day'
                     ? dataList[0].summary.activities
@@ -1046,7 +1095,11 @@ const ActivityList: React.FC = () => {
                             period={cardData.period}
                             summary={toDisplaySummary(cardData.summary)}
                             dailyDistances={cardData.summary.dailyDistances}
+                            dailyDistancesByType={
+                              cardData.summary.dailyDistancesByType
+                            }
                             interval={interval}
+                            sportType={sportType}
                             activities={
                               interval === 'day'
                                 ? cardData.summary.activities
