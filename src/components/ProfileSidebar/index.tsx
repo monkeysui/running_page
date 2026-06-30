@@ -3,6 +3,7 @@ import { Activity, M_TO_DIST, DIST_UNIT, locationForRun } from '@/utils/utils';
 import { formatHoursShort } from '@/utils/stats';
 import { convertMovingTime2Sec } from '@/utils/utils';
 import { useMemo, useState } from 'react';
+import { useInterval } from '@/hooks/useInterval';
 import {
   ACTIVITY_TYPE_COLORS,
   DASHBOARD_ACTIVITY_TYPES,
@@ -44,15 +45,23 @@ interface ProfileSidebarProps {
   activities: Activity[];
 }
 
-type OverviewActivityType = 'All' | DashboardActivityType;
-
-const OVERVIEW_ACTIVITY_TYPES: OverviewActivityType[] = [
-  'All',
-  ...DASHBOARD_ACTIVITY_TYPES,
-];
+const OVERVIEW_CAROUSEL_INTERVAL_MS = 6000;
 
 const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
-  const [activityType, setActivityType] = useState<OverviewActivityType>('All');
+  const [activityType, setActivityType] =
+    useState<DashboardActivityType>('Run');
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+
+  useInterval(
+    () => {
+      setActivityType((currentType) => {
+        const currentIndex = DASHBOARD_ACTIVITY_TYPES.indexOf(currentType);
+        const nextIndex = (currentIndex + 1) % DASHBOARD_ACTIVITY_TYPES.length;
+        return DASHBOARD_ACTIVITY_TYPES[nextIndex];
+      });
+    },
+    isCarouselPaused ? null : OVERVIEW_CAROUSEL_INTERVAL_MS
+  );
 
   const stats = useMemo(() => {
     let meters = 0;
@@ -60,13 +69,10 @@ const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
     const countries = new Set<string>();
     const provinces = new Set<string>();
     const years = new Set<string>();
-    const selectedActivities =
-      activityType === 'All'
-        ? activities
-        : activities.filter(
-            (activity) =>
-              normalizeDashboardActivityType(activity.type) === activityType
-          );
+    const selectedActivities = activities.filter(
+      (activity) =>
+        normalizeDashboardActivityType(activity.type) === activityType
+    );
 
     selectedActivities.forEach((r) => {
       meters += r.distance || 0;
@@ -101,13 +107,16 @@ const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
       )
     : '';
   const latestDistance = latest ? (latest.distance / M_TO_DIST).toFixed(1) : '';
-  const accentColor =
-    activityType === 'All'
-      ? 'var(--color-secondary)'
-      : ACTIVITY_TYPE_COLORS[activityType];
+  const accentColor = ACTIVITY_TYPE_COLORS[activityType];
 
   return (
-    <div className="bg-surface-card flex h-full gap-3 rounded-2xl p-5 transition-transform hover:scale-[1.02]">
+    <div
+      className="bg-surface-card flex h-full gap-3 rounded-2xl p-5 transition-transform hover:scale-[1.02]"
+      onMouseEnter={() => setIsCarouselPaused(true)}
+      onMouseLeave={() => setIsCarouselPaused(false)}
+      onFocus={() => setIsCarouselPaused(true)}
+      onBlur={() => setIsCarouselPaused(false)}
+    >
       <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-baseline gap-1.5">
@@ -176,12 +185,9 @@ const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
       </div>
 
       <div className="flex w-14 shrink-0 flex-col justify-between gap-1 border-l border-white/5 pl-2">
-        {OVERVIEW_ACTIVITY_TYPES.map((type) => {
+        {DASHBOARD_ACTIVITY_TYPES.map((type) => {
           const selected = type === activityType;
-          const color =
-            type === 'All'
-              ? 'var(--color-secondary)'
-              : ACTIVITY_TYPE_COLORS[type];
+          const color = ACTIVITY_TYPE_COLORS[type];
           return (
             <button
               key={type}

@@ -198,13 +198,6 @@ if __name__ == "__main__":
         action="store_true",
         help="only bridge Garmin accounts; do not regenerate local page data",
     )
-    parser.add_argument(
-        "--global-to-cn",
-        dest="global_to_cn",
-        action="store_true",
-        help="bridge Garmin Global activities to Garmin CN instead of CN to Global",
-    )
-
     options = parser.parse_args()
     secret_string_cn = options.cn_secret_string
     secret_string_global = options.global_secret_string
@@ -213,20 +206,12 @@ if __name__ == "__main__":
         print("Missing argument nor valid configuration file")
         sys.exit(1)
 
-    if options.global_to_cn:
-        source_secret_string = secret_string_global
-        target_secret_string = secret_string_cn
-        source_domain = "COM"
-        target_domain = "CN"
-        source_label = "Global"
-        target_label = "CN"
-    else:
-        source_secret_string = secret_string_cn
-        target_secret_string = secret_string_global
-        source_domain = "CN"
-        target_domain = "COM"
-        source_label = "CN"
-        target_label = "Global"
+    source_secret_string = secret_string_cn
+    target_secret_string = secret_string_global
+    source_domain = "CN"
+    target_domain = "COM"
+    source_label = "CN"
+    target_label = "Global"
 
     print(f"Bridge direction: Garmin {source_label} -> Garmin {target_label}")
 
