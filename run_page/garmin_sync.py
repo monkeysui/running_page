@@ -8,6 +8,7 @@ import asyncio
 import datetime as dt
 import logging
 import os
+from zoneinfo import ZoneInfo
 
 os.environ["GARTH_TELEMETRY_ENABLED"] = "false"
 import sys
@@ -20,7 +21,7 @@ from lxml import etree
 import aiofiles
 import garth
 import httpx
-from config import FOLDER_DICT, JSON_FILE, SQL_FILE
+from config import BASE_TIMEZONE, FOLDER_DICT, JSON_FILE, SQL_FILE
 from garmin_device_adaptor import process_garmin_data
 from utils import make_activities_file
 
@@ -305,12 +306,68 @@ async def download_garmin_data(
         traceback.print_exc()
 
 
-async def get_activity_id_list(client, start=0):
+def parse_start_after(start_after):
+    if not start_after:
+        return None
+    start_after = str(start_after).strip()
+    local_timezone = ZoneInfo(BASE_TIMEZONE)
+    if len(start_after) == 10:
+        cutoff = dt.datetime.combine(
+            dt.date.fromisoformat(start_after), dt.time.min, tzinfo=local_timezone
+        )
+    else:
+        cutoff = dt.datetime.fromisoformat(start_after.replace("Z", "+00:00"))
+        if cutoff.tzinfo is None:
+            cutoff = cutoff.replace(tzinfo=local_timezone)
+    return cutoff.astimezone(dt.timezone.utc)
+
+
+def parse_garmin_activity_time(activity, key, timezone):
+    value = activity.get(key)
+    if not value:
+        return None
+    try:
+        activity_time = dt.datetime.fromisoformat(str(value).replace(" ", "T"))
+    except ValueError:
+        return None
+    if activity_time.tzinfo is None:
+        activity_time = activity_time.replace(tzinfo=timezone)
+    return activity_time.astimezone(dt.timezone.utc)
+
+
+def get_garmin_activity_start_time(activity):
+    return parse_garmin_activity_time(
+        activity, "startTimeGMT", dt.timezone.utc
+    ) or parse_garmin_activity_time(activity, "startTimeLocal", ZoneInfo(BASE_TIMEZONE))
+
+
+def filter_activity_ids_by_start(activities, start_after):
+    activity_ids = []
+    reached_cutoff = False
+    for activity in activities:
+        activity_id = str(activity.get("activityId", ""))
+        if not activity_id:
+            continue
+        if start_after is not None:
+            start_time = get_garmin_activity_start_time(activity)
+            if start_time is None:
+                print(f"Skipping Garmin activity {activity_id}: missing start time")
+                continue
+            if start_time < start_after:
+                reached_cutoff = True
+                continue
+        activity_ids.append(activity_id)
+    return activity_ids, reached_cutoff
+
+
+async def get_activity_id_list(client, start=0, start_after=None):
     activities = await client.get_activities(start, 100)
     if len(activities) > 0:
-        ids = list(map(lambda a: str(a.get("activityId", "")), activities))
+        ids, reached_cutoff = filter_activity_ids_by_start(activities, start_after)
         print("Syncing Activity IDs")
-        return ids + await get_activity_id_list(client, start + 100)
+        if reached_cutoff:
+            return ids
+        return ids + await get_activity_id_list(client, start + 100, start_after)
     else:
         return []
 
@@ -351,13 +408,23 @@ def get_garmin_summary_infos(activity_summary, activity_id):
 
 
 async def download_new_activities(
-    secret_string, auth_domain, downloaded_ids, is_only_running, folder, file_type
+    secret_string,
+    auth_domain,
+    downloaded_ids,
+    is_only_running,
+    folder,
+    file_type,
+    start_after=None,
+    dry_run=False,
 ):
     client = Garmin(secret_string, auth_domain, is_only_running)
     # because I don't find a para for after time, so I use garmin-id as filename
     # to find new run to generate
-    activity_ids = await get_activity_id_list(client)
-    to_generate_garmin_ids = list(set(activity_ids) - set(downloaded_ids))
+    if start_after is not None:
+        print(f"Only syncing Garmin activities after {start_after.isoformat()}")
+    activity_ids = await get_activity_id_list(client, start_after=start_after)
+    downloaded_id_set = set(downloaded_ids)
+    to_generate_garmin_ids = [id for id in activity_ids if id not in downloaded_id_set]
     print(f"{len(to_generate_garmin_ids)} new activities to be downloaded")
 
     to_generate_garmin_id2title = {}
@@ -373,6 +440,13 @@ async def download_new_activities(
         except Exception as e:
             print(f"Failed to get activity summary {id}: {str(e)}")
             continue
+
+    if dry_run:
+        print("Dry run enabled. No Garmin activity files will be downloaded.")
+        for id in to_generate_garmin_ids:
+            print(f"{id}: {to_generate_garmin_id2title.get(id, '')}")
+        await client.req.aclose()
+        return to_generate_garmin_ids, to_generate_garmin_id2title
 
     start_time = time.time()
     await gather_with_concurrency(
@@ -423,6 +497,21 @@ if __name__ == "__main__":
         default="gpx",
         help="to download personal documents or ebook",
     )
+    parser.add_argument(
+        "--start-after",
+        dest="start_after",
+        default=os.getenv("GARMIN_SYNC_START_AFTER"),
+        help=(
+            "only sync activities starting after this date/time. "
+            f"Naive values are treated as {BASE_TIMEZONE}; date-only means local midnight"
+        ),
+    )
+    parser.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="show which Garmin activities would be downloaded without writing files",
+    )
     options = parser.parse_args()
     secret_string = options.secret_string
     auth_domain = "CN" if options.is_cn else "COM"  # Default to COM if not specified
@@ -445,6 +534,8 @@ if __name__ == "__main__":
         # merge downloaded_ids:list
         downloaded_ids = list(set(downloaded_ids + downloaded_gpx_ids))
 
+    start_after = parse_start_after(options.start_after)
+
     loop = asyncio.get_event_loop()
     future = asyncio.ensure_future(
         download_new_activities(
@@ -454,10 +545,14 @@ if __name__ == "__main__":
             is_only_running,
             folder,
             file_type,
+            start_after=start_after,
+            dry_run=options.dry_run,
         )
     )
     loop.run_until_complete(future)
     new_ids, id2title = future.result()
+    if options.dry_run:
+        sys.exit(0)
     # fit may contain gpx(maybe upload by user)
     if file_type == "fit":
         make_activities_file(
