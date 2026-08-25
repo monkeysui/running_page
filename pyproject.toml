@@ -60,3 +60,10 @@ packages = ["run_page"]
 dev = [
     "pytest>=9.0.3",
 ]
+
+[tool.ruff.lint]
+# Ruff 0.16 widened its default rule set, which surfaced several hundred
+# pre-existing violations across the upstream sync scripts and broke CI.
+# CI installs ruff unpinned, so state the rule set explicitly here -- this
+# is the default ruff applied before 0.16.
+select = ["E4", "E7", "E9", "F"]
