@@ -176,10 +176,17 @@ def run():
     client = IntervalsICU(options.athlete_id, options.api_key)
     activities = client.get_activities(oldest=options.start_date, newest=today)
 
+    print(f"Intervals.icu returned {len(activities)} activities since {options.start_date}")
+
     if not options.sync_all:
-        activities = [
-            activity for activity in activities if activity.get("type") in RUNNING_TYPES
-        ]
+        dropped = [a for a in activities if a.get("type") not in RUNNING_TYPES]
+        for activity in dropped:
+            print(
+                f"  Skipping {activity.get('start_date_local')} {activity.get('id')}: "
+                f"type={activity.get('type')!r} is not a running type "
+                f"(pass --all to sync every type)"
+            )
+        activities = [a for a in activities if a.get("type") in RUNNING_TYPES]
 
     # Only activities with a declared file type and supported folder mapping
     candidates = []
@@ -187,9 +194,17 @@ def run():
     for activity in activities:
         file_type = activity.get("file_type")
         if not file_type:
+            print(
+                f"  Skipping {activity.get('start_date_local')} {activity.get('id')}: "
+                f"no file_type (Intervals.icu has no original file for it)"
+            )
             continue
         file_type = str(file_type).lower()
         if file_type not in FOLDER_DICT:
+            print(
+                f"  Skipping {activity.get('start_date_local')} {activity.get('id')}: "
+                f"unsupported file_type={file_type!r}"
+            )
             continue
         candidates.append((activity, file_type))
         # Build title dict keyed by numeric ID (matching downloaded filename)
