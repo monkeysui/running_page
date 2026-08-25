@@ -176,7 +176,9 @@ def run():
     client = IntervalsICU(options.athlete_id, options.api_key)
     activities = client.get_activities(oldest=options.start_date, newest=today)
 
-    print(f"Intervals.icu returned {len(activities)} activities since {options.start_date}")
+    print(
+        f"Intervals.icu returned {len(activities)} activities since {options.start_date}"
+    )
 
     if not options.sync_all:
         dropped = [a for a in activities if a.get("type") not in RUNNING_TYPES]
