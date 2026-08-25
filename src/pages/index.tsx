@@ -26,6 +26,7 @@ import {
   computePersonalBests,
 } from '@/utils/stats';
 import { useTheme } from '@/hooks/useTheme';
+import { normalizeDashboardActivityType } from '@/utils/activityTypes';
 import { INFO_MESSAGE } from '@/utils/const';
 
 const YEARLY_GOAL = 1000; // km
@@ -84,14 +85,22 @@ const Index = () => {
     return parseFloat((meters / M_TO_DIST).toFixed(1));
   }, [activities, year, thisYear]);
 
+  // Goals, streak and personal bests stay running-only above; the logs table
+  // and the map it drives cover every dashboard type.
+  const loggedActivities = useMemo(
+    () =>
+      activities.filter((r) => normalizeDashboardActivityType(r.type) !== null),
+    [activities]
+  );
+
   const runs = useMemo(() => {
     return filterAndSortRuns(
-      runActivities,
+      loggedActivities,
       currentFilter.item,
       currentFilter.func,
       sortDateFunc
     );
-  }, [runActivities, currentFilter.item, currentFilter.func]);
+  }, [loggedActivities, currentFilter.item, currentFilter.func]);
 
   const changeYear = useCallback((y: string) => {
     setYear(y);
@@ -270,11 +279,11 @@ const Index = () => {
         </section>
       )}
 
-      {/* Row 3: Run logs | Personal Best + Marathon */}
+      {/* Row 3: Activity logs | Personal Best + Marathon */}
       <section className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
         <div className="bg-surface-card flex h-full flex-col rounded-2xl p-6 transition-transform hover:scale-[1.005] lg:col-span-8">
           <h3 className="font-headline mb-4 text-xl font-bold">
-            {year === 'Total' ? 'All Run Logs' : 'Latest Run Logs'}
+            {year === 'Total' ? 'All Activity Logs' : 'Latest Activity Logs'}
           </h3>
           <RunTable
             runs={runs}

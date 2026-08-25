@@ -107,6 +107,16 @@ const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
       )
     : '';
   const latestDistance = latest ? (latest.distance / M_TO_DIST).toFixed(1) : '';
+  // Intervals.icu names activities after the city they start in, so Run, Ride
+  // and Swim show their type instead. Hike keeps its name.
+  const latestType = latest
+    ? normalizeDashboardActivityType(latest.type)
+    : null;
+  const latestLabel = !latest
+    ? ''
+    : latestType === 'Hike'
+      ? latest.name || latestType
+      : latestType || latest.type;
   const accentColor = ACTIVITY_TYPE_COLORS[activityType];
 
   return (
@@ -168,9 +178,7 @@ const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
           <span className="text-muted">Latest</span>
           {latest ? (
             <span className="truncate">
-              <span className="font-medium">
-                {normalizeDashboardActivityType(latest.type) || latest.type}
-              </span>
+              <span className="font-medium">{latestLabel}</span>
               <span className="text-muted">
                 {' '}
                 · {latestDistance} {DIST_UNIT} · {latestDateLabel}

@@ -1,4 +1,5 @@
 import { chinaCities } from '@/static/city';
+import { normalizeDashboardActivityType } from './activityTypes';
 import {
   MUNICIPALITY_CITIES_ARR,
   RUN_TITLES,
@@ -233,6 +234,14 @@ const titleForRun = (run: Activity): string => {
       return `${city} ${activity_sport}`;
     }
   }
+  // The marathon and time-of-day titles below are running-specific -- without
+  // this a ride would be listed as "Afternoon Run" and a long hike as "Full
+  // Marathon". Non-running activities use their own sport name instead.
+  const dashboardType = normalizeDashboardActivityType(run.type);
+  if (dashboardType === 'Ride') return ACTIVITY_TYPES.CYCLING_TITLE;
+  if (dashboardType === 'Swim') return ACTIVITY_TYPES.SWIMMING_TITLE;
+  if (dashboardType === 'Hike') return ACTIVITY_TYPES.HIKING_TITLE;
+
   // 3. use time+length if location or type is not available
   const runDistance = run.distance / 1000;
   const runHour = +run.start_date_local.slice(11, 13);
