@@ -169,9 +169,7 @@ const ProfileSidebar = ({ activities }: ProfileSidebarProps) => {
           {latest ? (
             <span className="truncate">
               <span className="font-medium">
-                {latest.name ||
-                  normalizeDashboardActivityType(latest.type) ||
-                  latest.type}
+                {normalizeDashboardActivityType(latest.type) || latest.type}
               </span>
               <span className="text-muted">
                 {' '}

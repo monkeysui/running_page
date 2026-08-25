@@ -246,6 +246,17 @@ def run():
 
         time.sleep(1)
 
+    # With no candidates at all there is nothing to import, but activities.json
+    # must still be regenerated from whatever is already on disk -- otherwise it
+    # is left untouched and silently drifts out of sync with the database.
+    if not all_file_types:
+        all_file_types = {
+            ft
+            for ft, folder in FOLDER_DICT.items()
+            if os.path.isdir(folder)
+            and any(name.endswith(f".{ft}") for name in os.listdir(folder))
+        }
+
     for file_type in all_file_types:
         make_activities_file(
             SQL_FILE,
