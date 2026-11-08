@@ -262,7 +262,10 @@ const Index = () => {
               </div>
             </div>
             <div className="flex flex-1 flex-col justify-center">
-              <YearHeatmap year={year} />
+              <YearHeatmap
+                year={year}
+                totalDistanceKm={selectedYearDistanceKm}
+              />
             </div>
           </div>
           <div className="bg-surface-card flex h-full flex-col rounded-2xl p-6 transition-transform hover:scale-[1.005] lg:col-span-4">

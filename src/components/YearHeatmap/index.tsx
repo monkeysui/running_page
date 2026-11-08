@@ -10,6 +10,7 @@ import {
 
 interface IYearHeatmapProps {
   year: string;
+  totalDistanceKm: number;
 }
 
 const EMPTY_COLOR = 'var(--color-surface-variant)';
@@ -30,8 +31,11 @@ const shadeFor = (type: DashboardActivityType, km: number): string => {
   return `color-mix(in srgb, ${ACTIVITY_TYPE_COLORS[type]} ${pct}%, ${EMPTY_COLOR})`;
 };
 
-const legendShade = (type: DashboardActivityType, level: number) =>
-  `color-mix(in srgb, ${ACTIVITY_TYPE_COLORS[type]} ${SHADE_PCT[level - 1]}%, var(--color-surface-variant))`;
+const legendShade = (
+  type: DashboardActivityType,
+  pct: number,
+  empty = EMPTY_COLOR
+) => `color-mix(in srgb, ${ACTIVITY_TYPE_COLORS[type]} ${pct}%, ${empty})`;
 
 const MONTHS = [
   'Jan',
@@ -54,10 +58,13 @@ const GAP = 3;
 const STRIDE = CELL + GAP;
 const LEFT_PAD = 28;
 const TOP_PAD = 18;
+const EXPORT_PAD = 16;
+const EXPORT_GRID_TOP = 50;
+const EXPORT_LEGEND_HEIGHT = 38;
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-const YearHeatmap = ({ year }: IYearHeatmapProps) => {
+const YearHeatmap = ({ year, totalDistanceKm }: IYearHeatmapProps) => {
   const { activities } = useActivities();
 
   const { cells, weekCount, totals } = useMemo(() => {
@@ -146,14 +153,10 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
       cells: out,
       weekCount: maxCol + 1,
       totals: {
-        runKm: runMeters / M_TO_DIST,
-        rideKm: rideMeters / M_TO_DIST,
-        hikeKm: hikeMeters / M_TO_DIST,
-        swimKm: swimMeters / M_TO_DIST,
-        runCount,
-        rideCount,
-        hikeCount,
-        swimCount,
+        Run: { count: runCount, km: runMeters / M_TO_DIST },
+        Ride: { count: rideCount, km: rideMeters / M_TO_DIST },
+        Hike: { count: hikeCount, km: hikeMeters / M_TO_DIST },
+        Swim: { count: swimCount, km: swimMeters / M_TO_DIST },
       },
     };
   }, [activities, year]);
@@ -175,16 +178,27 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
 
   const width = LEFT_PAD + weekCount * STRIDE + 4;
   const height = TOP_PAD + 7 * STRIDE + 6;
+  const exportWidth = width + 2 * EXPORT_PAD;
+  const exportHeight = EXPORT_GRID_TOP + height + EXPORT_LEGEND_HEIGHT;
 
   const chartRef = useRef<SVGSVGElement>(null);
-  const [image, setImage] = useState<{ cells: typeof cells; src: string }>();
-  const imageSrc = image?.cells === cells ? image.src : undefined;
+  const [image, setImage] = useState<{
+    cells: typeof cells;
+    totalDistanceKm: number;
+    src: string;
+  }>();
+  const imageSrc =
+    image?.cells === cells && image.totalDistanceKm === totalDistanceKm
+      ? image.src
+      : undefined;
 
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
 
     const styles = getComputedStyle(chart);
+    const emptyColor = styles.getPropertyValue('--color-surface-variant');
+    const mutedColor = styles.getPropertyValue('--color-on-surface-variant');
     const snapshot = chart.cloneNode(true) as SVGSVGElement;
     snapshot.removeAttribute('class');
     snapshot.removeAttribute('style');
@@ -192,24 +206,57 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
     snapshot.setAttribute('height', String(height));
     snapshot.style.color = styles.color;
     snapshot.style.fontFamily = styles.fontFamily;
-    snapshot.style.setProperty(
-      '--color-surface-variant',
-      styles.getPropertyValue('--color-surface-variant')
-    );
+    snapshot.style.setProperty('--color-surface-variant', emptyColor);
 
     const canvas = document.createElement('canvas');
     const scale = 3;
-    canvas.width = width * scale;
-    canvas.height = height * scale;
+    canvas.width = exportWidth * scale;
+    canvas.height = exportHeight * scale;
     const context = canvas.getContext('2d');
     if (!context) return;
     const background = styles.getPropertyValue('--color-surface-container');
     const source = new Image();
     source.onload = () => {
+      context.scale(scale, scale);
       context.fillStyle = background;
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(source, 0, 0, canvas.width, canvas.height);
-      setImage({ cells, src: canvas.toDataURL('image/png') });
+      context.fillRect(0, 0, exportWidth, exportHeight);
+      context.drawImage(source, EXPORT_PAD, EXPORT_GRID_TOP, width, height);
+
+      context.textBaseline = 'middle';
+      context.fillStyle = styles.color;
+      context.font = `700 14px ${styles.fontFamily}`;
+      context.fillText(`Activity Heatmap ${year}`, EXPORT_PAD, 26);
+
+      const distance = `${totalDistanceKm} km`;
+      const right = exportWidth - EXPORT_PAD;
+      context.textAlign = 'right';
+      context.font = `500 11px ${styles.fontFamily}`;
+      context.fillStyle = mutedColor;
+      context.fillText('total', right, 26);
+      const distanceEnd = right - context.measureText('total').width - 4;
+      context.font = `700 11px ${styles.fontFamily}`;
+      context.fillStyle = styles.color;
+      context.fillText(distance, distanceEnd, 26);
+
+      context.textAlign = 'left';
+      context.font = `10px ${styles.fontFamily}`;
+      const legendY = EXPORT_GRID_TOP + height + 12;
+      let legendX = EXPORT_PAD;
+      for (const type of DASHBOARD_ACTIVITY_TYPES) {
+        for (const pct of SHADE_PCT) {
+          context.fillStyle = legendShade(type, pct, emptyColor);
+          context.beginPath();
+          context.arc(legendX + 4, legendY, 4, 0, Math.PI * 2);
+          context.fill();
+          legendX += 10;
+        }
+        const { count, km } = totals[type];
+        const label = `${type} · ${count} · ${km.toFixed(0)} km`;
+        context.fillStyle = mutedColor;
+        context.fillText(label, legendX + 3, legendY);
+        legendX += context.measureText(label).width + 22;
+      }
+      setImage({ cells, totalDistanceKm, src: canvas.toDataURL('image/png') });
     };
     source.src = `data:image/svg+xml,${encodeURIComponent(
       new XMLSerializer().serializeToString(snapshot)
@@ -218,13 +265,28 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
     return () => {
       source.onload = null;
     };
-  }, [cells, height, width]);
+  }, [
+    cells,
+    exportHeight,
+    exportWidth,
+    height,
+    totalDistanceKm,
+    totals,
+    width,
+    year,
+  ]);
 
   const updateDayTitle = (event: MouseEvent<HTMLImageElement>) => {
     const img = event.currentTarget;
     const bounds = img.getBoundingClientRect();
-    const x = ((event.clientX - bounds.left) * width) / bounds.width - LEFT_PAD;
-    const y = ((event.clientY - bounds.top) * height) / bounds.height - TOP_PAD;
+    const x =
+      ((event.clientX - bounds.left) * exportWidth) / bounds.width -
+      EXPORT_PAD -
+      LEFT_PAD;
+    const y =
+      ((event.clientY - bounds.top) * exportHeight) / bounds.height -
+      EXPORT_GRID_TOP -
+      TOP_PAD;
     const cell =
       x >= 0 && y >= 0 && x % STRIDE < CELL && y % STRIDE < CELL
         ? cells.find(
@@ -240,15 +302,29 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
   return (
     <div className="w-full">
       {imageSrc && (
-        <img
-          src={imageSrc}
-          alt={`Activity Heatmap ${year}`}
-          width={width}
-          height={height}
-          className="mx-auto block h-auto w-full"
-          style={{ maxWidth: (180 * width) / height }}
-          onMouseMove={updateDayTitle}
-        />
+        // Keep the responsive HTML heading and legend on screen. The browser
+        // saves the full image when the user right-clicks the visible grid.
+        <div
+          className="relative mx-auto w-full overflow-hidden"
+          style={{
+            aspectRatio: width / height,
+            maxWidth: (180 * width) / height,
+          }}
+        >
+          <img
+            src={imageSrc}
+            alt={`Activity Heatmap ${year}`}
+            width={exportWidth}
+            height={exportHeight}
+            className="absolute block h-auto max-w-none"
+            style={{
+              left: `${(-100 * EXPORT_PAD) / width}%`,
+              top: `${(-100 * EXPORT_GRID_TOP) / height}%`,
+              width: `${(100 * exportWidth) / width}%`,
+            }}
+            onMouseMove={updateDayTitle}
+          />
+        </div>
       )}
       <svg
         ref={chartRef}
@@ -304,20 +380,15 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
 
       <div className="text-muted mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px]">
         {DASHBOARD_ACTIVITY_TYPES.map((t) => {
-          const totalsFor = {
-            Run: { count: totals.runCount, km: totals.runKm },
-            Ride: { count: totals.rideCount, km: totals.rideKm },
-            Hike: { count: totals.hikeCount, km: totals.hikeKm },
-            Swim: { count: totals.swimCount, km: totals.swimKm },
-          }[t];
+          const totalsFor = totals[t];
           return (
             <div key={t} className="flex items-center gap-1.5">
               <span className="flex gap-0.5">
-                {[1, 2, 3, 4].map((lvl) => (
+                {SHADE_PCT.map((pct) => (
                   <span
-                    key={lvl}
+                    key={pct}
                     className="inline-block h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: legendShade(t, lvl) }}
+                    style={{ backgroundColor: legendShade(t, pct) }}
                   />
                 ))}
               </span>
