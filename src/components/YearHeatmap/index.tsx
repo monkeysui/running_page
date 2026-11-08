@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import useActivities from '@/hooks/useActivities';
 import { M_TO_DIST } from '@/utils/utils';
 import {
@@ -176,13 +176,86 @@ const YearHeatmap = ({ year }: IYearHeatmapProps) => {
   const width = LEFT_PAD + weekCount * STRIDE + 4;
   const height = TOP_PAD + 7 * STRIDE + 6;
 
+  const chartRef = useRef<SVGSVGElement>(null);
+  const [image, setImage] = useState<{ cells: typeof cells; src: string }>();
+  const imageSrc = image?.cells === cells ? image.src : undefined;
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    const styles = getComputedStyle(chart);
+    const snapshot = chart.cloneNode(true) as SVGSVGElement;
+    snapshot.removeAttribute('class');
+    snapshot.removeAttribute('style');
+    snapshot.setAttribute('width', String(width));
+    snapshot.setAttribute('height', String(height));
+    snapshot.style.color = styles.color;
+    snapshot.style.fontFamily = styles.fontFamily;
+    snapshot.style.setProperty(
+      '--color-surface-variant',
+      styles.getPropertyValue('--color-surface-variant')
+    );
+
+    const canvas = document.createElement('canvas');
+    const scale = 3;
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    const background = styles.getPropertyValue('--color-surface-container');
+    const source = new Image();
+    source.onload = () => {
+      context.fillStyle = background;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(source, 0, 0, canvas.width, canvas.height);
+      setImage({ cells, src: canvas.toDataURL('image/png') });
+    };
+    source.src = `data:image/svg+xml,${encodeURIComponent(
+      new XMLSerializer().serializeToString(snapshot)
+    )}`;
+
+    return () => {
+      source.onload = null;
+    };
+  }, [cells, height, width]);
+
+  const updateDayTitle = (event: MouseEvent<HTMLImageElement>) => {
+    const img = event.currentTarget;
+    const bounds = img.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) * width) / bounds.width - LEFT_PAD;
+    const y = ((event.clientY - bounds.top) * height) / bounds.height - TOP_PAD;
+    const cell =
+      x >= 0 && y >= 0 && x % STRIDE < CELL && y % STRIDE < CELL
+        ? cells.find(
+            (c) =>
+              c.x === Math.floor(x / STRIDE) && c.y === Math.floor(y / STRIDE)
+          )
+        : undefined;
+    img.title = cell
+      ? `${cell.date}${cell.type ? ` · ${cell.type} ${cell.distanceKm.toFixed(1)}km` : ''}`
+      : '';
+  };
+
   return (
     <div className="w-full">
+      {imageSrc && (
+        <img
+          src={imageSrc}
+          alt={`Activity Heatmap ${year}`}
+          width={width}
+          height={height}
+          className="mx-auto block h-auto w-full"
+          style={{ maxWidth: (180 * width) / height }}
+          onMouseMove={updateDayTitle}
+        />
+      )}
       <svg
+        ref={chartRef}
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="xMidYMid meet"
         className="block w-full"
-        style={{ maxHeight: 180 }}
+        style={{ maxHeight: 180, display: imageSrc ? 'none' : undefined }}
       >
         {monthLabels.map((m) => (
           <text
