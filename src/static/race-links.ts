@@ -2,6 +2,9 @@
 // Key: run_id, Value: { name (optional override), url (optional blog link) }
 // Name auto-generates as "年份+城市+马拉松" from location data when not set here
 const raceMetadata: Record<number, { name?: string; url?: string }> = {
+  1793489527000: {
+    name: '2026烟台马拉松',
+  },
   12697560113: {
     name: '2024潍坊马拉松',
     url: 'https://monkeys.cafe/marathon-3-weifang-2024/',

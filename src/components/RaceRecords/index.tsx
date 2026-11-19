@@ -25,6 +25,7 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
   const races = useMemo(() => {
     const matched = activities.filter((run) => {
       if (raceExcludeIds.has(run.run_id)) return false;
+      if (raceMetadata[run.run_id]) return true;
       const name = (run.name || '').toLowerCase();
       const isMarathonName =
         name.includes('马拉松') || name.includes('marathon');
@@ -59,7 +60,7 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
           name: displayName,
           date: run.start_date_local.slice(0, 10),
           distance: (run.distance / M_TO_DIST).toFixed(1) + ' ' + DIST_UNIT,
-          time: run.moving_time,
+          time: run.moving_time.split('.')[0],
           blogUrl: meta?.url,
         };
       });
