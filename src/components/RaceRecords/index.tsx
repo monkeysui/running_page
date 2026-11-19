@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useActivities from '@/hooks/useActivities';
 import { M_TO_DIST, DIST_UNIT, RunIds, locationForRun } from '@/utils/utils';
 import raceMetadata, { raceExcludeIds } from '@/static/race-links';
 
-const PAGE_SIZE = 3;
+const MOBILE_PAGE_SIZE = 3;
+const DESKTOP_PAGE_SIZE = 6;
+const LG_MEDIA_QUERY = '(min-width: 1024px)';
 
 interface IRaceRecordsProps {
   locateActivity: (_runIds: RunIds) => void;
@@ -21,6 +23,21 @@ interface RaceEntry {
 const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
   const { activities } = useActivities();
   const [page, setPage] = useState(0);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia(LG_MEDIA_QUERY).matches
+      : false
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(LG_MEDIA_QUERY);
+    const handleChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const pageSize = isDesktop ? DESKTOP_PAGE_SIZE : MOBILE_PAGE_SIZE;
 
   const races = useMemo(() => {
     const matched = activities.filter((run) => {
@@ -66,8 +83,12 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
       });
   }, [activities]);
 
-  const totalPages = Math.ceil(races.length / PAGE_SIZE);
-  const pagedRaces = races.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalPages = Math.ceil(races.length / pageSize);
+  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
+  const pagedRaces = races.slice(
+    currentPage * pageSize,
+    (currentPage + 1) * pageSize
+  );
 
   if (races.length === 0) return null;
 
@@ -90,17 +111,17 @@ const RaceRecords = ({ locateActivity }: IRaceRecordsProps) => {
           <div className="flex items-center gap-2 text-xs opacity-60">
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
+              disabled={currentPage === 0}
               className="px-1.5 py-0.5 disabled:opacity-30"
             >
               ‹
             </button>
             <span>
-              {page + 1}/{totalPages}
+              {currentPage + 1}/{totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={page === totalPages - 1}
+              disabled={currentPage === totalPages - 1}
               className="px-1.5 py-0.5 disabled:opacity-30"
             >
               ›
